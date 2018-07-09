@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Pending faces{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  <h1>Registered Guests</h1>
+  <table class="table table-striped">
+  <thead>
+  <tr>
+    <th>Face image</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for user in pending_users %}
+    <tr>
+      <td>{{ user.image}}</td>
+      <td><a href="#{{ user.id }}" >Add</a>/<a href="#{{ user.id }}" >Ignore</a></td>
+    </tr>
+  {% endfor %}
+</table>
+<p class="navbar-btn">
+  <a href="/test" class="btn btn-default">Test</a>
+</p>
+{% endblock %}
