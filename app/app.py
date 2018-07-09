@@ -21,7 +21,12 @@ def hello_world():
 
 @APP.route('/1')
 def hello_params():
-    return APP.config['MONGO_URI']
+    try:
+        mongo = PyMongo(APP)
+        return "Success!"
+    except Exception as ex:
+        return ex.message
+
 
 
 # @APP.route('/test')
