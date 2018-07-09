@@ -1,29 +1,37 @@
 import os
 from random import random
+
+import pymongo
 from flask import Flask, request, render_template, jsonify
-from flask_pymongo import PyMongo
 
 APP = Flask(__name__)
 
-APP.config['MONGO_URI'] = "mongodb://%s:%s@%s.documents.azure.com:10250/mean" % (
+uri = "mongodb://%s:%s@%s.documents.azure.com:10255/?ssl=true&replicaSet=globaldb" % (
     os.environ['DBNAME'], os.environ['DBPASS'], os.environ['DBNAME']
 )
 
+APP.config['MONGO_URI'] = uri
+client = pymongo.MongoClient(uri)
+db = client.get_database('icumister')
+
+
 # initialize the database connection
-mongo = PyMongo(APP)
 
 
 @APP.route('/')
 def hello_world():
-    return 'Hello, World!'
+    try:
+        return jsonify({'result': [x for x in db.list_collection_names()]}), 200
+    except Exception as ex:
+        return ex.message
 
 
 @APP.route('/test')
 def test_endpoint():
     try:
-        test_db = mongo.db.test
+        test_collection = db.get_collection('test')
         output = []
-        for s in test_db.find():
+        for s in test_collection.find():
             output.append(s)
 
         return jsonify({'result': output}), 200
@@ -34,11 +42,12 @@ def test_endpoint():
 @APP.route('/test_add')
 def test_add_endpoint():
     try:
-        test_db = mongo.db.test
-        result = test_db.insert_one({"key": random(), "$currentDate": {"ts": True}})
+        test_collection = db.get_collection('test')
+        result = test_collection.insert_one({"key": random(), "$currentDate": {"ts": True}})
         return jsonify({'result': result}), 200 if result is not None else 500
     except Exception as ex:
         return ex.message
+
 
 #
 #
