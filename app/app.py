@@ -40,7 +40,7 @@ def test_endpoint():
 @APP.route('/test_add')
 def test_add_endpoint():
     try:
-        result = test_collection.insert_one({"key": random(), "$currentDate": {"ts": True}})
+        result = test_collection.insert_one({"key": "bla_" + random(), "value": random()})
         return jsonify({'result': result}), 200 if result is not None else 500
     except Exception as ex:
         return ex.message, 500
