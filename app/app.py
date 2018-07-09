@@ -3,7 +3,7 @@ from random import random
 from flask import Flask, request, render_template, jsonify
 from flask_pymongo import PyMongo
 
-# APP = Flask(__name__)
+APP = Flask(__name__)
 # APP.config['MONGO_URI'] = "mongodb://%s:%s@%s.documents.azure.com:10250/mean?ssl=true&sslverifycertificate=false" % (
 #     os.environ['DBNAME'], os.environ['DBPASS'], os.environ['DBNAME']
 # )
