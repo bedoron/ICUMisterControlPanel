@@ -10,7 +10,7 @@ APP.config['MONGO_URI'] = "mongodb://%s:%s@%s.documents.azure.com:10250/mean?ssl
 
 # initialize the database connection
 mongo = PyMongo(APP)
-
+# Meh
 
 @APP.route('/')
 def hello_world():
