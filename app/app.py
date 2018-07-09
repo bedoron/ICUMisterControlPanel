@@ -1,6 +1,6 @@
 import os
 from random import random
-
+from ssl import CERT_NONE
 import pymongo
 from flask import Flask, request, render_template, jsonify
 
