@@ -11,8 +11,8 @@ uri = "mongodb://%s:%s@%s.documents.azure.com:10255/?ssl=true&replicaSet=globald
 )
 
 APP.config['MONGO_URI'] = uri
-client = pymongo.MongoClient(uri)
-db = client.get_database('icumister')
+
+db = None
 
 
 # initialize the database connection
@@ -21,6 +21,9 @@ db = client.get_database('icumister')
 @APP.route('/')
 def hello_world():
     try:
+        client = pymongo.MongoClient(uri)
+        db = client.get_database('icumister')
+
         return jsonify({'result': [x for x in db.list_collection_names()]}), 200
     except Exception as ex:
         return ex.message
