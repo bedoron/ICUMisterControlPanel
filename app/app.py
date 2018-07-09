@@ -41,8 +41,8 @@ def test_endpoint():
 def test_add_endpoint():
     try:
         result = test_collection.insert_one(
-            {"key": "bla_" + random.randint(10000, 99999), "value": random.randint(10000, 99999)})
-        
+            {"key": "bla_" + str(random.randint(10000, 99999)), "value": str(random.randint(10000, 99999))})
+
         return jsonify({'result': result}), 200 if result is not None else 500
     except Exception as ex:
         return ex.message, 500
