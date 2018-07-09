@@ -11,39 +11,27 @@ APP.config['MONGO_URI'] = "mongodb://%s:%s@%s.documents.azure.com:10250/mean" % 
 )
 
 # initialize the database connection
-# mongo = PyMongo(APP)
-# Meh
+mongo = PyMongo(APP)
 
 @APP.route('/')
 def hello_world():
     return 'Hello, World!'
 
+@APP.route('/test')
+def test_endpoint():
+    test_db = mongo.db.test
+    output = []
+    for s in test_db.find():
+        output.append(s)
 
-@APP.route('/1')
-def hello_params():
-    try:
-        mongo = PyMongo(APP)
-        return "Success!"
-    except Exception as ex:
-        return ex.message
+    return jsonify({'result': output}), 200
 
 
-
-# @APP.route('/test')
-# def test_endpoint():
-#     test_db = mongo.db.test
-#     output = []
-#     for s in test_db.find():
-#         output.append(s)
-#
-#     return jsonify({'result': output}), 200
-#
-#
-# @APP.route('/test_add')
-# def test_add_endpoint():
-#     test_db = mongo.db.test
-#     result = test_db.insert({"key": random(), "$currentDate": {"ts": True}})
-#     return jsonify({'result': result}), 200 if result is not None else 500
+@APP.route('/test_add')
+def test_add_endpoint():
+    test_db = mongo.db.test
+    result = test_db.insert({"key": random(), "$currentDate": {"ts": True}})
+    return jsonify({'result': result}), 200 if result is not None else 500
 
 
 #
