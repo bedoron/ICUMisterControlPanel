@@ -3,8 +3,6 @@ from random import random
 from flask import Flask, request, render_template, jsonify
 from flask_pymongo import PyMongo
 
-
-
 APP = Flask(__name__)
 APP.config['MONGO_URI'] = "mongodb://%s:%s@%s.documents.azure.com:10250/mean?ssl=true&sslverifycertificate=false" % (
     os.environ['DBNAME'], os.environ['DBPASS'], os.environ['DBNAME']
@@ -12,6 +10,12 @@ APP.config['MONGO_URI'] = "mongodb://%s:%s@%s.documents.azure.com:10250/mean?ssl
 
 # initialize the database connection
 mongo = PyMongo(APP)
+
+
+@APP.route('/')
+def hello_world():
+    return 'Hello, World!'
+
 
 @APP.route('/test')
 def test_endpoint():
@@ -22,11 +26,14 @@ def test_endpoint():
 
     return jsonify({'result': output}), 200
 
+
 @APP.route('/test_add')
 def test_add_endpoint():
     test_db = mongo.db.test
     result = test_db.insert({"key": random(), "$currentDate": {"ts": True}})
     return jsonify({'result': result}), 200 if result is not None else 500
+
+
 #
 #
 # @APP.route('/')
@@ -54,3 +61,6 @@ def test_add_endpoint():
 #
 #     return render_template('guest_confirmation.html',
 #         name=name, email=email, partysize=partysize)
+
+if __name__ == '__main__':
+    APP.run()
