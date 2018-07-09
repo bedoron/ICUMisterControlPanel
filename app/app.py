@@ -1,5 +1,5 @@
 import os
-from random import random
+import random
 from ssl import CERT_NONE
 import pymongo
 from flask import Flask, request, render_template, jsonify
@@ -40,7 +40,9 @@ def test_endpoint():
 @APP.route('/test_add')
 def test_add_endpoint():
     try:
-        result = test_collection.insert_one({"key": "bla_" + random(), "value": random()})
+        result = test_collection.insert_one(
+            {"key": "bla_" + random.randint(10000, 99999), "value": random.randint(10000, 99999)})
+        
         return jsonify({'result': result}), 200 if result is not None else 500
     except Exception as ex:
         return ex.message, 500
