@@ -1,7 +1,10 @@
+import datetime
+import json
 import os
 import random
 from ssl import CERT_NONE
 import pymongo
+from bson import ObjectId
 from flask import Flask, request, render_template, jsonify
 
 APP = Flask(__name__)
@@ -16,7 +19,19 @@ db = client.get_database('icumister')
 test_collection = db.get_collection('test')
 
 
-# initialize the database connection
+class JSONEncoder(json.JSONEncoder):
+    ''' extend json-encoder class'''
+
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime.datetime):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+
+
+# use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
+APP.json_encoder = JSONEncoder
 
 
 @APP.route('/')
