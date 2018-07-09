@@ -21,7 +21,7 @@ db = None
 @APP.route('/')
 def hello_world():
     try:
-        client = pymongo.MongoClient(uri)
+        client = pymongo.MongoClient(uri, ssl_cert_reqs=CERT_NONE)
         db = client.get_database('icumister')
 
         return jsonify({'result': [x for x in db.list_collection_names()]}), 200
