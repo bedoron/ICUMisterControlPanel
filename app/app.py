@@ -36,8 +36,8 @@ APP.json_encoder = JSONEncoder
 
 @APP.route('/')
 def hello_world():
-    pending_users = [{"image": "poop", "id": "id_poop"}]
-    return render_template('pending_users.html', pending=pending_users)
+    pending_users = [{"image": "Dixie Normous", "id": "0xb19d1c"}, {"image": "Alota Fagina", "id": "meh"}]
+    return render_template('pending_users.html', pending_users=pending_users)
 
 
 @APP.route('/test')
