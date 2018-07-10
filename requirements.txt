@@ -7,6 +7,7 @@ python-editor==1.0.3
 six==1.10.0
 Flask-PyMongo==2.0.0
 pymongo==3.7.0
-msrestazure>=0.4.0
-azure-mgmt-resource>=1.1.0
+msrest==0.5.1
+msrestazure==0.4.34
+azure-mgmt-resource==1.2.2
 azure-keyvault==1.0.0
