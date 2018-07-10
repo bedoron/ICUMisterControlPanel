@@ -1,5 +1,4 @@
 asn1crypto==0.24.0
-azure-common==1.1.13
 azure-keyvault==1.0.0
 azure-mgmt-nspkg==2.0.0
 azure-mgmt-resource==1.2.2
@@ -11,20 +10,10 @@ click==6.7
 configparser==3.5.0
 cryptography==2.2.2
 entrypoints==0.2.3
-enum34==1.1.6
 Flask==0.12.1
-Flask-Migrate==2.0.3
 Flask-PyMongo==2.0.0
 Flask-Script==2.0.5
-Flask-SQLAlchemy==2.2
-idna==2.7
-ipaddress==1.0.22
-isodate==0.6.0
-itsdangerous==0.24
-Jinja2==2.9.6
 keyring==13.2.1
-Mako==1.0.6
-MarkupSafe==1.0
 msrest==0.5.1
 msrestazure==0.4.34
 oauthlib==2.1.0
