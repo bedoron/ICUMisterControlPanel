@@ -15,12 +15,12 @@
   <tbody>
   {% for user in pending_users %}
     <tr>
-      <td>{{ user.image}}</td>
-      <td><a href="#{{ user.id }}" >Add</a>/<a href="#{{ user.id }}" >Ignore</a></td>
+      <td><img src="{{ user.img_url }}" alt="{{ user.id }}"/></td>
+      <td>{{ user.ts }}<a href="#{{ user.id }}" >Add</a>/<a href="#{{ user.id }}" >Ignore</a></td>
     </tr>
   {% endfor %}
 </table>
 <p class="navbar-btn">
-  <a href="/test" class="btn btn-default">Test</a>
+  <a href="{{ url_for('add_face') }}" class="btn btn-default">Add face</a>
 </p>
 {% endblock %}

@@ -1,34 +1,20 @@
-import datetime
-import json
-import os
+import base64
 import random
-from ssl import CERT_NONE
-import pymongo
+
 from bson import ObjectId
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, render_template, jsonify, request, flash, redirect, Response, url_for
+from pymongo.database import Database
+from werkzeug.datastructures import FileStorage
+
+from utils import get_key_vault, get_db, JSONEncoder
 
 APP = Flask(__name__)
 
-uri = "mongodb://%s:%s@%s.documents.azure.com:10255/?ssl=true&replicaSet=globaldb" % (
-    os.environ['DBNAME'], os.environ['DBPASS'], os.environ['DBNAME'])
-
-APP.config['MONGO_URI'] = uri
-
-client = pymongo.MongoClient(uri, ssl_cert_reqs=CERT_NONE)
-db = client.get_database('icumister')
+db = get_db()  # type: Database
 test_collection = db.get_collection('test')
+new_faces = db.get_collection('new_faces')
 
-
-class JSONEncoder(json.JSONEncoder):
-    ''' extend json-encoder class'''
-
-    def default(self, o):
-        if isinstance(o, ObjectId):
-            return str(o)
-        if isinstance(o, datetime.datetime):
-            return str(o)
-        return json.JSONEncoder.default(self, o)
-
+keyvault = get_key_vault()
 
 # use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
 APP.json_encoder = JSONEncoder
@@ -36,8 +22,36 @@ APP.json_encoder = JSONEncoder
 
 @APP.route('/')
 def hello_world():
-    pending_users = [{"image": "Dixie Normous", "id": "0xb19d1c"}, {"image": "Alota Fagina", "id": "meh"}]
+    pending_users = []
+    for new_face in new_faces.find({"status": "new"}):
+        img_url = url_for('get_face_image', object_id=new_face['_id'])
+        pending_users.append({'ts': new_face["ts"], 'id': new_face['_id'], 'img_url': img_url})
+
     return render_template('pending_users.html', pending_users=pending_users)
+
+
+@APP.route('/face/image/<object_id>')
+def get_face_image(object_id):  # TODO: Sanitize this input
+    if object_id is None:
+        return "Error", 404
+    object_id = ObjectId(object_id)
+
+    face = new_faces.find_one({'_id': object_id})
+    if face is None:
+        return "Not found", 404
+
+    face_image = base64.b64decode(face['image'])
+    return Response(face_image, mimetype='image/jpeg')
+
+
+@APP.route('/train_face/known/<object_id>')
+def train_face_known(object_id):
+    return 'Training face ' + object_id + ' as known'
+
+
+@APP.route('/train_face/unknown/<object_id>')
+def train_face_unknown(object_id):
+    return 'Training face ' + object_id + ' as unknown'
 
 
 @APP.route('/test')
@@ -53,15 +67,49 @@ def test_endpoint():
         return ex.message, 500
 
 
-@APP.route('/test_add')
-def test_add_endpoint():
-    try:
-        result = test_collection.insert_one(
-            {"key": "bla_" + str(random.randint(10000, 99999)), "value": str(random.randint(10000, 99999))})
+def _store_uploaded_face():
+    if 'faceImage' not in request.files:
+        flash('No file uploaded')
+        return render_template('add_face.html')
 
-        return jsonify({'result': result}), 200 if result is not None else 500
+    file = request.files['faceImage']  # type: FileStorage
+    if file.filename == '':
+        flash('No file selected')
+        return render_template('add_face.html')
+
+    b64_file = None
+    with file.stream as f:
+        b64_file = base64.b64encode(f.read())
+
+    if b64_file is None:
+        flash('Failed converting file to b64')
+        return render_template('add_face.html')
+
+    try:
+        result = new_faces.update_one({}, {"$set": {'image': b64_file, "status": "new"}, "$currentDate": {"ts": True}},
+                                      upsert=True)
     except Exception as ex:
-        return ex.message, 500
+        flash(ex.message)
+        return render_template('add_face.html')
+
+    return redirect('/')
+
+    # try:
+    #     # Base64 face data and store it in the DB
+    #     result = test_collection.insert_one(
+    #         {"key": "bla_" + str(random.randint(10000, 99999)), "value": str(random.randint(10000, 99999))})
+    #
+    #     return jsonify({'result': result}), 200 if result is not None else 500
+    # except Exception as ex:
+    #     return ex.message, 500
+
+
+@APP.route('/add_face', methods=['GET', 'POST'])
+def add_face():
+    if request.method == 'POST':
+        return _store_uploaded_face()
+    else:
+        return render_template('add_face.html')
 
 
 #
