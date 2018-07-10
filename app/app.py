@@ -20,7 +20,6 @@ keyvault = get_key_vault()
 APP.json_encoder = JSONEncoder
 
 
-
 @APP.route('/')
 def hello_world():
     pending_users = []
