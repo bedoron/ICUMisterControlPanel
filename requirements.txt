@@ -1,8 +1,8 @@
 asn1crypto==0.24.0
-azure-keyvault==1.0.0
-azure-mgmt-nspkg==2.0.0
-azure-mgmt-resource==1.2.2
-azure-nspkg==2.0.0
+azure-keyvault
+azure-mgmt-nspkg
+azure-mgmt-resource
+azure-nspkg
 certifi==2018.4.16
 cffi==1.11.5
 chardet==3.0.4
