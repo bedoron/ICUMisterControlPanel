@@ -10,6 +10,7 @@ from utils import get_key_vault, get_db, JSONEncoder
 
 APP = Flask(__name__)
 
+
 db = get_db()  # type: Database
 test_collection = db.get_collection('test')
 new_faces = db.get_collection('new_faces')
