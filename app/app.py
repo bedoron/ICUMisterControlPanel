@@ -63,7 +63,12 @@ def train_face_ignore(object_id):
 
 @APP.route('/train_face/known/<object_id>')
 def train_face_known(object_id):
-    initialize_cf()
+    try:
+        initialize_cf()
+    except Exception as ex:
+        flash('Failed to initialize CF: %s'.format(ex.message), category='error')
+        return redirect('/')
+
     person = Person.fetch(new_faces, object_id)
 
     if person.is_trained_for_group(KNOWN_PERSON_GROUP):
