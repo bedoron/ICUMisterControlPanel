@@ -9,6 +9,7 @@
   <thead>
   <tr>
     <th>Face image</th>
+    <th>Date</th>
     <th>Action</th>
   </tr>
   </thead>
@@ -16,7 +17,8 @@
   {% for user in pending_users %}
     <tr>
       <td><img src="{{ user.img_url }}" alt="{{ user.id }}"/></td>
-      <td>{{ user.ts }}<a href="#{{ user.id }}" >Add</a>/<a href="#{{ user.id }}" >Ignore</a></td>
+      <td>{{ user.ts }}</td>
+      <td><a href="#{{ user.id }}" >Add</a>/<a href="#{{ user.id }}" >Ignore</a></td>
     </tr>
   {% endfor %}
 </table>

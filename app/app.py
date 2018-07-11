@@ -10,7 +10,6 @@ from utils import get_key_vault, get_db, JSONEncoder
 
 APP = Flask(__name__)
 
-
 db = get_db()  # type: Database
 test_collection = db.get_collection('test')
 new_faces = db.get_collection('new_faces')
@@ -25,11 +24,11 @@ APP.json_encoder = JSONEncoder
 def hello_world():
     pending_users = []
     for new_face in new_faces.find({"status": "new"}):
-        img_url = url_for('get_face_image', object_id=new_face['_id'])
-        pending_users.append({'ts': new_face["ts"], 'id': new_face['_id'], 'img_url': img_url})
+        object_id = ObjectId(new_face['_id'])
+        img_url = url_for('get_face_image', object_id=object_id)
+        pending_users.append({'ts': object_id.generation_time, 'id': object_id, 'img_url': img_url})
 
     return render_template('pending_users.html', pending_users=pending_users)
-
 
 
 @APP.route('/face/image/<object_id>')
@@ -59,10 +58,9 @@ def train_face_unknown(object_id):
 @APP.route('/test')
 def test_endpoint():
     try:
-
         output = []
-        for s in test_collection.find():
-            output.append(s)
+        for s in new_faces.find():
+            output.append(ObjectId(s['_id']))
 
         return jsonify({'result': output}), 200
     except Exception as ex:
@@ -88,8 +86,7 @@ def _store_uploaded_face():
         return render_template('add_face.html')
 
     try:
-        result = new_faces.update_one({}, {"$set": {'image': b64_file, "status": "new"}, "$currentDate": {"ts": True}},
-                                      upsert=True)
+        result = new_faces.insert({'image': b64_file, "status": "new"})
     except Exception as ex:
         flash(ex.message)
         return render_template('add_face.html')

@@ -8,7 +8,7 @@ from bson import ObjectId
 from pymongo.database import Database
 from msrestazure.azure_active_directory import MSIAuthentication, ServicePrincipalCredentials
 
-# from azure.keyvault import KeyVaultClient, KeyVaultAuthentication
+from azure.keyvault import KeyVaultClient, KeyVaultAuthentication
 
 KEY_VAULT_URI = os.environ.get("KEY_VAULT_URI")
 MONGO_URI = "mongodb://%s:%s@%s.documents.azure.com:10255/?ssl=true&replicaSet=globaldb" % (
@@ -33,8 +33,8 @@ def get_key_vault():
     """
     :rtype: KeyVaultClient
     """
-    pass  # azure-keyvault is broken in Azure App Services
-    # return KeyVaultClient(_get_kv_credentials())
+    pass  # azure-keyvault is broken in Azure App Services - You need to upgrade it on the server using setup_tools
+    return KeyVaultClient(_get_kv_credentials())
 
 
 def get_db():
