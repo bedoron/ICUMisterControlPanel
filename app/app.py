@@ -66,7 +66,7 @@ def train_face_known(object_id):
     try:
         initialize_cf()
     except Exception as ex:
-        flash('Failed to initialize CF: %s'.format(ex.message), category='error')
+        flash('Failed to initialize CF: {}'.format(ex.message), category='error')
         return redirect('/')
 
     person = Person.fetch(new_faces, object_id)
