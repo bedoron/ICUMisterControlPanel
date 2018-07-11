@@ -25,7 +25,7 @@ test_collection = db.get_collection('test')
 new_faces = db.get_collection('new_faces')
 
 # Initialize Cognitive face
-initialize_cf()
+
 
 # use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
 APP.json_encoder = JSONEncoder
@@ -63,6 +63,7 @@ def train_face_ignore(object_id):
 
 @APP.route('/train_face/known/<object_id>')
 def train_face_known(object_id):
+    initialize_cf()
     person = Person.fetch(new_faces, object_id)
 
     if person.is_trained_for_group(KNOWN_PERSON_GROUP):
