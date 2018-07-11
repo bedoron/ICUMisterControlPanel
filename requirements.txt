@@ -1,4 +1,3 @@
-azure-keyvault
 azure-mgmt-nspkg
 azure-mgmt-resource
 azure-nspkg

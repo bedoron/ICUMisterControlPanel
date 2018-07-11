@@ -31,6 +31,7 @@ def hello_world():
     return render_template('pending_users.html', pending_users=pending_users)
 
 
+
 @APP.route('/face/image/<object_id>')
 def get_face_image(object_id):  # TODO: Sanitize this input
     if object_id is None:
