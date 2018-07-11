@@ -18,7 +18,7 @@
     <tr>
       <td><img src="{{ user.img_url }}" alt="{{ user.id }}"/></td>
       <td>{{ user.ts }}</td>
-      <td><a href="#{{ user.id }}" >Add</a>/<a href="#{{ user.id }}" >Ignore</a></td>
+      <td><a href="{{ user.train_known }}#known" >Add</a>/<a href="{{ user.train_ignore }}#ignore" >Ignore</a></td>
     </tr>
   {% endfor %}
 </table>

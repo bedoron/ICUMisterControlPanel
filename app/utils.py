@@ -2,7 +2,7 @@ import datetime
 import json
 import os
 from _ssl import CERT_NONE
-
+import cognitive_face as CF
 import pymongo
 from bson import ObjectId
 from pymongo.database import Database
@@ -13,6 +13,10 @@ from azure.keyvault import KeyVaultClient, KeyVaultAuthentication
 KEY_VAULT_URI = os.environ.get("KEY_VAULT_URI")
 MONGO_URI = "mongodb://%s:%s@%s.documents.azure.com:10255/?ssl=true&replicaSet=globaldb" % (
     os.environ['DBNAME'], os.environ['DBPASS'], os.environ['DBNAME'])
+
+KNOWN_PERSON_GROUP = "HackathonPersonGroup"
+UNKNOWN_PERSON_GROUP = "UnknownHackathonPersonGroup"
+IGNORE_PERSON_GROUP = "IgnoreHackathonPersonGroup"
 
 
 def _get_kv_credentials():
@@ -29,12 +33,34 @@ def _get_kv_credentials():
         )
 
 
-def get_key_vault():
+def _get_key_vault():
     """
     :rtype: KeyVaultClient
     """
     pass  # azure-keyvault is broken in Azure App Services - You need to upgrade it on the server using setup_tools
     return KeyVaultClient(_get_kv_credentials())
+
+
+kvclient = _get_key_vault()
+
+
+def get_secret(secret_id):
+    return kvclient.get_secret(KEY_VAULT_URI, secret_id, '').value
+
+
+def create_person_group_if_needed(person_group_name):
+    try:
+        CF.person_group.create(person_group_name.lower(), person_group_name)
+    except Exception as e:
+        pass
+
+
+def initialize_cf():
+    cf_secret = get_secret('faceKey1')
+    CF.Key.set(cf_secret)
+    CF.BaseUrl.set('https://westeurope.api.cognitive.microsoft.com/face/v1.0')
+    for face_group_name in [UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP, IGNORE_PERSON_GROUP]:
+        create_person_group_if_needed(face_group_name)
 
 
 def get_db():
@@ -46,7 +72,7 @@ def get_db():
 
 
 if __name__ == "__main__":
-    get_key_vault()
+    _get_key_vault()
 
 
 class JSONEncoder(json.JSONEncoder):

@@ -1,3 +1,4 @@
+cognitive_face
 azure-keyvault
 azure-mgmt-nspkg
 azure-mgmt-resource
@@ -12,6 +13,8 @@ entrypoints==0.2.3
 Flask==0.12.1
 Flask-PyMongo==2.0.0
 Flask-Script==2.0.5
+flask-mongo-sessions
+flask_mongoengine
 keyring==13.2.1
 msrest==0.5.1
 msrestazure==0.4.34
