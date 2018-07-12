@@ -7,7 +7,7 @@ from cognitive_face import CognitiveFaceException
 from pymongo.database import Collection
 import cognitive_face as CF
 
-from app.utils import IGNORE_PERSON_GROUP, KNOWN_PERSON_GROUP, UNKNOWN_PERSON_GROUP
+from utils import IGNORE_PERSON_GROUP, KNOWN_PERSON_GROUP, UNKNOWN_PERSON_GROUP
 
 
 class FileSupplier(object):
