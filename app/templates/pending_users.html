@@ -39,8 +39,10 @@
 <script type="javascript">
 $(function() {
     $('rest').click(function() {
+        event.preventDefault();
         $.ajax({
             url: this.href,
+            dataType: "json",
             type: 'GET',
             success: function(response) {
                 console.log(response);
