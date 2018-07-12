@@ -38,8 +38,9 @@
 
 <script type="javascript">
 $(function() {
-    $('.rest').click(function() {
+    $("a[class~='rest'").click(function(event) {
         event.preventDefault();
+
         $.ajax({
             url: this.href,
             dataType: "json",
