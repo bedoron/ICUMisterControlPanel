@@ -16,7 +16,7 @@ from flask_mongoengine import MongoEngine
 
 from models import Person
 from utils import get_db, JSONEncoder, get_secret, initialize_cf, IGNORE_PERSON_GROUP, KNOWN_PERSON_GROUP, \
-    UNKNOWN_PERSON_GROUP, _get_kv_credentials, KEY_VAULT_URI
+    UNKNOWN_PERSON_GROUP, _get_kv_credentials, KEY_VAULT_URI, _get_key_vault
 
 APP = Flask(__name__)
 
@@ -38,7 +38,13 @@ def hello_world():
     try:
         credentials = _get_kv_credentials() # type: MSIAuthentication
         bleh = {'conf': credentials.msi_conf.keys(), 'token': credentials.token, 'resource': credentials.resource, 'kv_uri': KEY_VAULT_URI}
+
+        kvclient = _get_key_vault()
+        secret = kvclient.get_secret(KEY_VAULT_URI, 'faceKey1', '')
+        bleh['le_secret'] = secret
+
         flash("Bleh: {}".format(json.dumps(bleh)))
+
     except Exception as ex:
         flash('bla bla: {}'.format(ex))
 
