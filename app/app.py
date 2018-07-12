@@ -1,3 +1,4 @@
+import json
 import os
 
 from cognitive_face import CognitiveFaceException
@@ -14,7 +15,7 @@ from flask_mongoengine import MongoEngine
 
 from models import Person
 from utils import get_db, JSONEncoder, get_secret, initialize_cf, IGNORE_PERSON_GROUP, KNOWN_PERSON_GROUP, \
-    UNKNOWN_PERSON_GROUP
+    UNKNOWN_PERSON_GROUP, _get_kv_credentials
 
 APP = Flask(__name__)
 
@@ -33,6 +34,14 @@ APP.json_encoder = JSONEncoder
 
 @APP.route('/')
 def hello_world():
+    try:
+        credentials = _get_kv_credentials()
+        flash("Bleh: {}".format(json.dumps(credentials)))
+    except Exception as ex:
+        flash('bla bla: {}'.format(ex))
+
+
+
     pending_users = []
     for new_face in new_faces.find({"status": "new"}):
         object_id = ObjectId(new_face['_id'])
