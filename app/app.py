@@ -36,7 +36,8 @@ APP.json_encoder = JSONEncoder
 def hello_world():
     try:
         credentials = _get_kv_credentials()
-        flash("Bleh: {}".format(json.dumps(credentials)))
+        bleh = {'clientId': credentials.client.client_id, 'token': credentials.token}
+        flash("Bleh: {}".format(json.dumps(bleh)))
     except Exception as ex:
         flash('bla bla: {}'.format(ex))
 
