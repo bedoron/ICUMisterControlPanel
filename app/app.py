@@ -1,23 +1,18 @@
+import base64
 import json
-import os
 
-from azure.keyvault.key_vault_client import KeyVaultClient
-from cognitive_face import CognitiveFaceException
-from flask import Flask, render_template, jsonify, request, flash, redirect, Response, url_for
-from msrestazure.azure_active_directory import MSIAuthentication
-from werkzeug.datastructures import FileStorage
-from pymongo.database import Database
 import cognitive_face as CF
 from bson import ObjectId
-import base64
+from cognitive_face import CognitiveFaceException
 from flask import Flask
-
+from flask import render_template, jsonify, request, flash, redirect, Response, url_for
 from flask_mongo_sessions import MongoDBSessionInterface
-from flask_mongoengine import MongoEngine
+from pymongo.database import Database
+from werkzeug.datastructures import FileStorage
 
 from models import Person
-from utils import get_db, JSONEncoder, get_secret, initialize_cf, IGNORE_PERSON_GROUP, KNOWN_PERSON_GROUP, \
-    UNKNOWN_PERSON_GROUP, _get_kv_credentials, KEY_VAULT_URI, _get_key_vault
+from utils import get_db, JSONEncoder, get_secret, initialize_cf, KNOWN_PERSON_GROUP, \
+    UNKNOWN_PERSON_GROUP, IGNORE_PERSON_GROUP
 
 APP = Flask(__name__)
 
@@ -28,32 +23,59 @@ test_collection = db.get_collection('test')
 new_faces = db.get_collection('new_faces')
 
 # Initialize Cognitive face
-
+try:
+    initialize_cf()
+except Exception as ex:
+    flash('Failed to initialize CF: {}'.format(ex), category='error')
 
 # use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
 APP.json_encoder = JSONEncoder
 
 
+@APP.errorhandler(Exception)
+def expection_handler(ex):
+    return jsonify(ex), 500
+
+
 @APP.route('/')
-def hello_world():
+def show_all():
     pending_users = []
-    for new_face in new_faces.find({"status": "new"}):
+    for new_face in new_faces.find():
         object_id = ObjectId(new_face['_id'])
         img_url = url_for('get_face_image', object_id=object_id)
 
         train_known_face = url_for('train_face_known', object_id=object_id)
         train_ignore_face = url_for('train_face_ignore', object_id=object_id)
         delete_face_url = url_for('delete_face', object_id=object_id)
+        status = 'untrained' if new_face['status'] == 'new' else new_face['status']
 
         pending_users.append(
             {'ts': object_id.generation_time, 'id': object_id, 'img_url': img_url, 'train_known': train_known_face,
-             'train_ignore': train_ignore_face, 'delete_face_url': delete_face_url})
+             'train_ignore': train_ignore_face, 'delete_face_url': delete_face_url, 'status': status})
 
     return render_template('pending_users.html', pending_users=pending_users)
 
 
+@APP.route('/face/known/<object_id>')
+def is_face_known(object_id):
+    person = Person.fetch(new_faces, object_id)
+    return jsonify({'result': person.is_known})
+
+
+@APP.route('/face/unknown/<object_id>')
+def is_face_unknown(object_id):
+    person = Person.fetch(new_faces, object_id)
+    return jsonify({'result': person.is_unknown})
+
+
+@APP.route('/face/ignored/<object_id>')
+def is_face_ignored(object_id):
+    person = Person.fetch(new_faces, object_id)
+    return jsonify({'result': person.is_ignored})
+
+
 @APP.route('/face/image/<object_id>')
-def get_face_image(object_id):  # TODO: Sanitize this input
+def get_face_image(object_id):
     person = Person.fetch(new_faces, object_id)
     return Response(person.image, mimetype='image/jpeg')
 
@@ -71,22 +93,15 @@ def delete_face(object_id):  # TODO: Sanitize this input
 @APP.route('/train_face/ignore/<object_id>')
 def train_face_ignore(object_id):
     api_key = get_secret('faceKey1')  # type: str
-
     return 'Training face ' + object_id + ' as ignore'
 
 
 @APP.route('/train_face/known/<object_id>')
 def train_face_known(object_id):
-    try:
-        initialize_cf()
-    except Exception as ex:
-        flash('Failed to initialize CF: {}, {}'.format(ex.message, ex), category='error')
-        return redirect('/')
-
     person = Person.fetch(new_faces, object_id)
 
     if person.is_trained_for_group(KNOWN_PERSON_GROUP):
-        flash("Person already exists")
+        flash("Person already exists in group {}".format(KNOWN_PERSON_GROUP), category='warning')
         return redirect("/")
 
     person_result = CF.person.create(KNOWN_PERSON_GROUP.lower(), object_id)
@@ -94,7 +109,7 @@ def train_face_known(object_id):
     try:
         persistent_face_id = CF.person.add_face(person, KNOWN_PERSON_GROUP.lower(), person_id)
         CF.person_group.train(KNOWN_PERSON_GROUP.lower())
-        person.add_trained_details(person_id, persistent_face_id)
+        person.add_trained_details(person_id, persistent_face_id, KNOWN_PERSON_GROUP)
     except CognitiveFaceException as e:
         if e.status_code == 400:
             flash("No face in image")

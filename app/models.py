@@ -2,9 +2,12 @@ import base64
 from abc import ABCMeta, abstractmethod
 
 from bson import ObjectId
+from bson.errors import InvalidId
 from cognitive_face import CognitiveFaceException
 from pymongo.database import Collection
 import cognitive_face as CF
+
+from app.utils import IGNORE_PERSON_GROUP, KNOWN_PERSON_GROUP, UNKNOWN_PERSON_GROUP
 
 
 class FileSupplier(object):
@@ -42,9 +45,10 @@ class Person(FileSupplier):
     def ts(self):
         return self._ts
 
-    def add_trained_details(self, person_id, persistent_face_id):
+    def add_trained_details(self, person_id, persistent_face_id, trained_for):
         self._collection.update_one({'_id': self._id},
-                                    {'$set': {'person_id': person_id, 'persisten_face_id': persistent_face_id}})
+                                    {'$set': {'person_id': person_id, 'persisten_face_id': persistent_face_id,
+                                              'status': trained_for}})
 
     def is_trained_for_group(self, group_name):
         try:
@@ -57,6 +61,18 @@ class Person(FileSupplier):
 
         return cf_person is not None
 
+    @property
+    def is_known(self):
+        return self.is_trained_for_group(KNOWN_PERSON_GROUP)
+
+    @property
+    def is_unknown(self):
+        return self.is_trained_for_group(UNKNOWN_PERSON_GROUP)
+
+    @property
+    def is_ignored(self):
+        return self.is_trained_for_group(IGNORE_PERSON_GROUP)
+
     @staticmethod
     def fetch(collection, object_id):
         """
@@ -65,6 +81,7 @@ class Person(FileSupplier):
         :rtype: Person
         """
         _id = ObjectId(object_id)
+
         result = collection.find_one({'_id': _id})
         if result is None:
             return None

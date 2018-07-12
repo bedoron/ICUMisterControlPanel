@@ -1,34 +1,56 @@
 {% extends "base.html" %}
 {% block title %}Detected strangers{% endblock %}
 {% block head %}
-  {{ super() }}
+{{ super() }}
 {% endblock %}
 {% block content %}
-  <h1>Detected strangers</h1>
-  <table class="table table-striped">
-  <thead>
-  <tr>
-    <th>Face image</th>
-    <th>Date</th>
-    <th>Action</th>
-  </tr>
-  </thead>
-  <tbody>
-  {% for user in pending_users %}
+<h1>Detected strangers</h1>
+<table class="table table-striped">
+    <thead>
     <tr>
-      <td><img src="{{ user.img_url }}" alt="{{ user.id }}"/></td>
-      <td>{{ user.ts }}</td>
-      <td>
-        <div align="center">
-          <a href="{{ user.train_known }}#known" class="btn btn-default">Add</a>
-          <a href="{{ user.train_ignore }}#ignore" class="btn btn-default">Ignore</a>
-          <a href="{{ user.delete_face_url }}#delete" class="btn btn-default">Delete</a>
-        </div>
-      </td>
+        <th>Face image</th>
+        <th>Date</th>
+        <th>Action</th>
     </tr>
-  {% endfor %}
+    </thead>
+    <tbody>
+    {% for user in pending_users %}
+    <tr>
+        <td><img src="{{ user.img_url }}" alt="{{ user.id }}"/></td>
+        <td><span>{{ user.ts }}  <span class="badge badge-secondary">{{user.status}}</span></span></td>
+        <td>
+            <div align="center">
+                <a href="{{ user.train_known }}#known" class="btn btn-default">Add</a>
+                <a href="{{ user.train_ignore }}#ignore" class="btn btn-default">Ignore</a>
+                <a href="{{ user.delete_face_url }}#delete" class="btn btn-default">Delete</a>
+                <br/>
+                <a href="{{ url_for('is_known', object_id=user.id) }}" class="btn btn-default rest">is known</a>
+                <a href="{{ url_for('is_unknown', object_id=user.id) }}" class="btn btn-default rest">is unknown</a>
+                <a href="{{ url_for('is_ignored', object_id=user.id) }}" class="btn btn-default rest">is ignored</a>
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
 </table>
 <p class="navbar-btn">
-  <a href="{{ url_for('add_face') }}" class="btn btn-default">Add face</a>
+    <a href="{{ url_for('add_face') }}" class="btn btn-default">Add face</a>
 </p>
+
+<script type="javascript">
+$(function() {
+    $('rest').click(function() {
+        $.ajax({
+            url: this.href,
+            type: 'GET',
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    });
+});
+
+</script>
 {% endblock %}
