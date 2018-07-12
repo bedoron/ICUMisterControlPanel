@@ -20,17 +20,23 @@ IGNORE_PERSON_GROUP = "IgnoreHackathonPersonGroup"
 
 
 def _get_kv_credentials():
-    if "APPSETTING_WEBSITE_SITE_NAME" in os.environ:
-        return MSIAuthentication(
-            resource='https://vault.azure.net'
-        )
-    else:
-        return ServicePrincipalCredentials(
-            client_id=os.environ['AZURE_CLIENT_ID'],
-            secret=os.environ['AZURE_CLIENT_SECRET'],
-            tenant=os.environ['AZURE_TENANT_ID'],
-            resource='https://vault.azure.net'
-        )
+    # if "APPSETTING_WEBSITE_SITE_NAME" in os.environ:
+    #     return MSIAuthentication(
+    #         resource='https://vault.azure.net'
+    #     )
+    # else:
+    #     return ServicePrincipalCredentials(
+    #         client_id=os.environ['AZURE_CLIENT_ID'],
+    #         secret=os.environ['AZURE_CLIENT_SECRET'],
+    #         tenant=os.environ['AZURE_TENANT_ID'],
+    #         resource='https://vault.azure.net'
+    #     )
+    return ServicePrincipalCredentials(
+        client_id=os.environ['AZURE_CLIENT_ID'],
+        secret=os.environ['AZURE_CLIENT_SECRET'],
+        tenant=os.environ['AZURE_TENANT_ID'],
+        resource='https://vault.azure.net'
+    )
 
 
 def _get_key_vault():
