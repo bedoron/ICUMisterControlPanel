@@ -24,9 +24,9 @@
                 <a href="{{ user.train_ignore }}#ignore" class="btn btn-default">Ignore</a>
                 <a href="{{ user.delete_face_url }}#delete" class="btn btn-default">Delete</a>
                 <br/>
-                <a href="{{ url_for('is_known', object_id=user.id) }}" class="btn btn-default rest">is known</a>
-                <a href="{{ url_for('is_unknown', object_id=user.id) }}" class="btn btn-default rest">is unknown</a>
-                <a href="{{ url_for('is_ignored', object_id=user.id) }}" class="btn btn-default rest">is ignored</a>
+                <a href="{{ url_for('is_face_known', object_id=user.id) }}" class="btn btn-default rest">is known</a>
+                <a href="{{ url_for('is_face_unknown', object_id=user.id) }}" class="btn btn-default rest">is unknown</a>
+                <a href="{{ url_for('is_face_ignored', object_id=user.id) }}" class="btn btn-default rest">is ignored</a>
             </div>
         </td>
     </tr>
