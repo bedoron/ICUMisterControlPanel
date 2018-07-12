@@ -36,20 +36,6 @@ APP.json_encoder = JSONEncoder
 
 @APP.route('/')
 def hello_world():
-    try:
-        credentials = _get_kv_credentials() # type: MSIAuthentication
-        bleh = {'conf': credentials.msi_conf.keys(), 'token': credentials.token, 'resource': credentials.resource, 'kv_uri': KEY_VAULT_URI}
-
-        kvclient = KeyVaultClient(credentials)
-        kvclient.config.enable_http_logger = True
-
-        flash("Bleh: {}".format(json.dumps(bleh)))
-
-    except Exception as ex:
-        flash('bla bla: {}'.format(ex))
-
-
-
     pending_users = []
     for new_face in new_faces.find({"status": "new"}):
         object_id = ObjectId(new_face['_id'])
@@ -69,6 +55,16 @@ def hello_world():
 def get_face_image(object_id):  # TODO: Sanitize this input
     person = Person.fetch(new_faces, object_id)
     return Response(person.image, mimetype='image/jpeg')
+
+
+@APP.route('/face/delete/<object_id>')
+def get_face_image(object_id):  # TODO: Sanitize this input
+    person = Person.fetch(new_faces, object_id)
+    result = person.delete()
+    if result is None:
+        flash('Failed deleting: {}'.format(json.dumps(result)))
+
+    return redirect('/')
 
 
 @APP.route('/train_face/ignore/<object_id>')

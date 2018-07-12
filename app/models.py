@@ -35,6 +35,9 @@ class Person(FileSupplier):
     def read(self):
         return base64.b64decode(self._image)
 
+    def delete(self):
+        return self._collection.delete_one({"_id": self._id})
+
     @property
     def ts(self):
         return self._ts
