@@ -34,7 +34,7 @@ APP.json_encoder = JSONEncoder
 
 @APP.errorhandler(Exception)
 def expection_handler(ex):
-    return jsonify(ex), 500
+    return jsonify({'error': ex.message}), 500
 
 
 @APP.route('/')

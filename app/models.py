@@ -46,7 +46,7 @@ class Person(FileSupplier):
     @property
     def detected_ids(self):
         if self._detected_ids is None:
-            self._detected_ids = [face['faceId'] for face in cf.face.detect(person)]
+            self._detected_ids = [face['faceId'] for face in CF.face.detect(self)]
             self._was_detected = True
 
         return self._detected_ids
@@ -74,7 +74,7 @@ class Person(FileSupplier):
 
     def is_trained_for_group(self, group_name):
         try:
-            identified = cf.face.identify(self.detected_ids, group_name.lower())
+            identified = CF.face.identify(self.detected_ids, group_name.lower())
             return identified is not None and len(identified) > 0
         except CognitiveFaceException as ex:
             if ex.status_code not in [404, 400]:
