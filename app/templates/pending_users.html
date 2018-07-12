@@ -36,8 +36,10 @@
     <a href="{{ url_for('add_face') }}" class="btn btn-default">Add face</a>
 </p>
 
-<script type="javascript">
-$(function() {
+<script type="text/javascript">
+/*
+$(document).ready(function() {
+    alert('zevel');
     $("a[class~='rest']").click(function(evt) {
         evt.preventDefault();
         target = evt.target;
@@ -46,10 +48,26 @@ $(function() {
             if (data['result']) {
                 messageType = "btn-success";
             }
-            $(target).addClass(messageType)
+            $(target).addClass(messageType);
+            return false;
         });
     });
 });
+*/
+
+$("a[class~='rest']").click(function(evt) {
+    evt.preventDefault();
+    target = evt.target;
+    $.getJSON(this.href, function(data) {
+        messageType = "btn-danger";
+        if (data['result']) {
+            messageType = "btn-success";
+        }
+        $(target).addClass(messageType);
+        return false;
+    });
+});
+
 
 </script>
 {% endblock %}
