@@ -1,6 +1,7 @@
 import json
 import os
 
+from azure.keyvault.key_vault_client import KeyVaultClient
 from cognitive_face import CognitiveFaceException
 from flask import Flask, render_template, jsonify, request, flash, redirect, Response, url_for
 from msrestazure.azure_active_directory import MSIAuthentication
@@ -39,9 +40,8 @@ def hello_world():
         credentials = _get_kv_credentials() # type: MSIAuthentication
         bleh = {'conf': credentials.msi_conf.keys(), 'token': credentials.token, 'resource': credentials.resource, 'kv_uri': KEY_VAULT_URI}
 
-        kvclient = _get_key_vault()
-        secret = kvclient.get_secret(KEY_VAULT_URI, 'faceKey1', '')
-        bleh['le_secret'] = secret
+        kvclient = KeyVaultClient(credentials)
+        kvclient.config.enable_http_logger = True
 
         flash("Bleh: {}".format(json.dumps(bleh)))
 
