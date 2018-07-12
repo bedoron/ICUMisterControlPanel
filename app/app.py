@@ -43,10 +43,11 @@ def hello_world():
 
         train_known_face = url_for('train_face_known', object_id=object_id)
         train_ignore_face = url_for('train_face_ignore', object_id=object_id)
+        delete_face_url = url_for('delete_face', object_id=object_id)
 
         pending_users.append(
             {'ts': object_id.generation_time, 'id': object_id, 'img_url': img_url, 'train_known': train_known_face,
-             'train_ignore': train_ignore_face})
+             'train_ignore': train_ignore_face, 'delete_face_url': delete_face_url})
 
     return render_template('pending_users.html', pending_users=pending_users)
 
@@ -58,7 +59,7 @@ def get_face_image(object_id):  # TODO: Sanitize this input
 
 
 @APP.route('/face/delete/<object_id>')
-def get_face_image(object_id):  # TODO: Sanitize this input
+def delete_face(object_id):  # TODO: Sanitize this input
     person = Person.fetch(new_faces, object_id)
     result = person.delete()
     if result is None:
