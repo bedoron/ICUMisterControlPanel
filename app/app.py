@@ -26,7 +26,7 @@ new_faces = db.get_collection('new_faces')
 try:
     initialize_cf()
 except Exception as ex:
-    flash('Failed to initialize CF: {}'.format(ex), category='error')
+    flash('Failed to initialize CF: {}'.format(ex), category='danger')
 
 # use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
 APP.json_encoder = JSONEncoder
@@ -112,7 +112,7 @@ def train_face_known(object_id):
         person.add_trained_details(person_id, persistent_face_id, KNOWN_PERSON_GROUP)
     except CognitiveFaceException as e:
         if e.status_code == 400:
-            flash("No face in image")
+            flash("No face in image", category='warning')
             return redirect('/')
 
     # Now lets remove this face from unknown person group because we know him now
@@ -148,7 +148,7 @@ def _store_uploaded_face():
 
     file = request.files['faceImage']  # type: FileStorage
     if file.filename == '':
-        flash('No file selected')
+        flash('No file selected', category='danger')
         return render_template('add_face.html')
 
     with file.stream as f:
