@@ -3,6 +3,7 @@ import os
 
 from cognitive_face import CognitiveFaceException
 from flask import Flask, render_template, jsonify, request, flash, redirect, Response, url_for
+from msrestazure.azure_active_directory import MSIAuthentication
 from werkzeug.datastructures import FileStorage
 from pymongo.database import Database
 import cognitive_face as CF
@@ -35,8 +36,8 @@ APP.json_encoder = JSONEncoder
 @APP.route('/')
 def hello_world():
     try:
-        credentials = _get_kv_credentials()
-        bleh = {'clientId': credentials.client.client_id, 'token': credentials.token}
+        credentials = _get_kv_credentials() # type: MSIAuthentication
+        bleh = {'conf': credentials.msi_conf.keys(), 'token': credentials.token, 'resource': credentials.resource}
         flash("Bleh: {}".format(json.dumps(bleh)))
     except Exception as ex:
         flash('bla bla: {}'.format(ex))
