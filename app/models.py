@@ -47,7 +47,7 @@ class Person(FileSupplier):
 
     def add_trained_details(self, person_id, persistent_face_id, trained_for):
         self._collection.update_one({'_id': self._id},
-                                    {'$set': {'person_id': person_id, 'persisten_face_id': persistent_face_id,
+                                    {'$set': {'person_id': person_id, 'persistent_face_id': persistent_face_id,
                                               'status': trained_for}})
 
     def is_trained_for_group(self, group_name):
