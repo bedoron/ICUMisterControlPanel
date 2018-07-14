@@ -74,7 +74,7 @@ class Person(FileSupplier):
         self._collection.update_one({'_id': self._id},
                                     {
                                         '$set': pg_training_details,
-                                        '$push': {'person_groups': trained_for}
+                                        '$push': {'person_groups': trained_for, 'person_ids': person_id}
                                     })
 
     def remove_all_trained_details(self):
@@ -92,11 +92,17 @@ class Person(FileSupplier):
         return success
 
     def remove_trained_details(self, person_group_name):
+        update_query = {
+            '$unset': {person_group_name: ""},
+            '$pull': {'person_groups': person_group_name}
+        }
+
+        person_id = self._person_document.get(person_group_name, {}).get('person_id', None)
+        if person_id:
+            update_query['$pull']['person_ids'] = person_id
+
         query_result = self._collection.update_one({'_id': self._id, person_group_name: {'$exists': True}},
-                                                   {
-                                                       '$unset': {person_group_name: ""},
-                                                       '$pull': {'person_groups': person_group_name}
-                                                   })
+                                                   update_query)
         return query_result.modified_count == 1
 
     def is_trained_for_group(self, group_name):
@@ -104,6 +110,14 @@ class Person(FileSupplier):
             return False
 
         return group_name in self._person_document['person_groups']
+
+    @staticmethod
+    def fetch_by_person_id(face_collection, person_id):
+        result = face_collection.find_one({'person_ids': person_id})
+        if result is None:
+            return None
+
+        return Person(face_collection, result)
 
     @staticmethod
     def fetch(face_collection, object_id):

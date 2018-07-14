@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
 <h1>Detected strangers</h1>
-<table class="table table-striped">
+<table class="table table-sm">
     <thead>
     <tr>
         <th>Face image</th>
@@ -15,18 +15,20 @@
     </thead>
     <tbody>
     {% for user in pending_users %}
-    <tr>
+    <tr id="{{ user.id }}">
         <td><img src="{{ user.img_url }}" alt="{{ user.id }}"/></td>
         <td><span>{{ user.ts }}  <span class="badge badge-secondary">{{user.status}}</span></span></td>
         <td>
-            <div align="center">
-                <a href="{{ user.train_known }}#known" class="btn btn-default">Add</a>
-                <a href="{{ user.train_ignore }}#ignore" class="btn btn-default">Ignore</a>
-                <a href="{{ user.delete_face_url }}#delete" class="btn btn-default">Delete</a>
-                <a href="{{ url_for('is_face_known', object_id=user.id) }}" class="btn btn-default rest">is known</a>
-                <a href="{{ url_for('is_face_unknown', object_id=user.id) }}" class="btn btn-default rest">is unknown</a>
-                <a href="{{ url_for('is_face_ignored', object_id=user.id) }}" class="btn btn-default rest">is ignored</a>
-                <a href="{{ user.info_url }}" class="btn btn-default log">info</a>
+            <div class="list-group">
+                <a href="{{ user.train_known }}#known" class="list-group-item list-group-item-action">Add</a>
+                <a href="{{ user.train_ignore }}#ignore" class="list-group-item list-group-item-action">Ignore</a>
+                <a href="{{ user.delete_face_url }}#delete" class="list-group-item list-group-item-action">Delete</a>
+                <a href="{{ url_for('is_face_known', object_id=user.id) }}" class="list-group-item list-group-item-action checker">is known</a>
+                <a href="{{ url_for('is_face_unknown', object_id=user.id) }}" class="list-group-item list-group-item-action checker">is unknown</a>
+                <a href="{{ url_for('is_face_ignored', object_id=user.id) }}" class="list-group-item list-group-item-action checker">is ignored</a>
+
+                <a href="{{ url_for('person_identify', object_id=user.id) }}" class="list-group-item list-group-item-action highlight">Highlight similar</a>
+                <a href="{{ user.info_url }}" class="list-group-item list-group-item-action log">info</a>
             </div>
         </td>
     </tr>
@@ -64,14 +66,26 @@ $("a[class~='log'").click(function(evt) {
     evt.preventDefault();
     target = evt.target;
     $.getJSON(this.href, function(data) {
-        debugger;
-        console.log(data);
         $("#modalcontainer").text(JSON.stringify(data, null, 2));
         $("#myModal").modal("show");
     });
 });
 
-$("a[class~='rest']").click(function(evt) {
+$("a[class~='highlight']").click(function(evt) {
+    evt.preventDefault();
+    target = evt.target;
+    $.getJSON(this.href, function(data) {
+        $("tr[class~='bg-success']").removeClass('bg-success');
+        object_ids = data['result'];
+        for (var idx in object_ids) {
+            debugger;
+            object_id = object_ids[idx];
+            $("tr[id='"+object_id+"']").addClass('bg-success');
+        }
+    });
+})
+
+$("a[class~='checker']").click(function(evt) {
     evt.preventDefault();
     target = evt.target;
     $.getJSON(this.href, function(data) {

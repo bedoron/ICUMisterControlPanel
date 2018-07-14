@@ -1,5 +1,6 @@
 import base64
 import json
+import time
 
 from bson import ObjectId
 from cognitive_face import CognitiveFaceException
@@ -62,6 +63,31 @@ def show_all():
 def person_info(object_id):
     person = Person.fetch(new_faces, object_id)
     return jsonify(person.document)
+
+
+@APP.route('/person/identify/<object_id>')
+def person_identify(object_id):
+    person = Person.fetch(new_faces, object_id)
+    possible_matches = []
+    for pg in [PersonGroup.known_person_group(), PersonGroup.unknown_person_group(), PersonGroup.ignore_person_group()]:
+        identification_result = pg.identify(person)
+        if not identification_result:
+            continue
+
+        for candidates in identification_result.values():
+            for candidate in candidates:
+                person_id = candidate['personId']
+                matching_person = Person.fetch_by_person_id(new_faces, person_id)
+                if not matching_person:
+                    continue
+
+                possible_matches.append(matching_person.id)
+
+        time.sleep(1)
+
+    if person.id not in possible_matches:
+        possible_matches.append(person.id)
+    return jsonify(result=possible_matches), 200
 
 
 @APP.route('/reset_training')

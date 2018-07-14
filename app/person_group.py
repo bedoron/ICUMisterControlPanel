@@ -92,20 +92,26 @@ class PersonGroup(object):
 
         return True
 
-    def has_person(self, person):
+    def identify(self, person):
         """
         :rtype person: Person
         """
         try:
             identified = CF.face.identify(person.detected_ids, self._person_group_id)
             actually_identified = filter(lambda record: record['faceId'] in person.detected_ids, identified)
-            identified_to_candidates = {record['faceId']: record['candidates'] for record in actually_identified}
-            return all([len(candidates) != 0 for candidates in identified_to_candidates.values()])
+            return {record['faceId']: record['candidates'] for record in actually_identified}
         except CognitiveFaceException as ex:
             if ex.status_code not in [404, 400]:
                 raise ex
 
-        return False
+        return None
+
+    def has_person(self, person):
+        """
+        :rtype person: Person
+        """
+        identified = self.identify(person)
+        return all([len(candidates) != 0 for candidates in identified.values()]) if identified else False
 
     def __contains__(self, person):
         if not isinstance(person, Person):
