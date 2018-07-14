@@ -89,9 +89,9 @@ $("a[class~='checker']").click(function(evt) {
     evt.preventDefault();
     target = evt.target;
     $.getJSON(this.href, function(data) {
-        messageType = "btn-danger";
+        messageType = "list-group-item-danger";
         if (data['result']) {
-            messageType = "btn-success";
+            messageType = "list-group-item-success";
         }
         $(target).addClass(messageType);
         return false;
