@@ -23,10 +23,10 @@
                 <a href="{{ user.train_known }}#known" class="btn btn-default">Add</a>
                 <a href="{{ user.train_ignore }}#ignore" class="btn btn-default">Ignore</a>
                 <a href="{{ user.delete_face_url }}#delete" class="btn btn-default">Delete</a>
-                <br/>
                 <a href="{{ url_for('is_face_known', object_id=user.id) }}" class="btn btn-default rest">is known</a>
                 <a href="{{ url_for('is_face_unknown', object_id=user.id) }}" class="btn btn-default rest">is unknown</a>
                 <a href="{{ url_for('is_face_ignored', object_id=user.id) }}" class="btn btn-default rest">is ignored</a>
+                <a href="{{ user.info_url }}" class="btn btn-default log">info</a>
             </div>
         </td>
     </tr>
@@ -34,26 +34,42 @@
 </table>
 <p class="navbar-btn">
     <a href="{{ url_for('add_face') }}" class="btn btn-default">Add face</a>
+    <a href="{{ url_for('reset_training') }}" class="btn btn-default">Reset training</a>
 </p>
 
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Person DB Object</h4>
+      </div>
+      <div class="modal-body">
+        <pre id="modalcontainer"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script type="text/javascript">
-/*
-$(document).ready(function() {
-    alert('zevel');
-    $("a[class~='rest']").click(function(evt) {
-        evt.preventDefault();
-        target = evt.target;
-        $.getJSON(this.href, function(data) {
-            messageType = "btn-danger";
-            if (data['result']) {
-                messageType = "btn-success";
-            }
-            $(target).addClass(messageType);
-            return false;
-        });
+
+$("a[class~='log'").click(function(evt) {
+    evt.preventDefault();
+    target = evt.target;
+    $.getJSON(this.href, function(data) {
+        debugger;
+        console.log(data);
+        $("#modalcontainer").text(JSON.stringify(data, null, 2));
+        $("#myModal").modal("show");
     });
 });
-*/
 
 $("a[class~='rest']").click(function(evt) {
     evt.preventDefault();
