@@ -27,3 +27,9 @@ In order to run this application you need to set the following variables:
 ## Extra material
 * Working website (for access contact me): http://icumistercontrolpanel.azurewebsites.net/
 * Appliance code: https://github.com/bedoron/ICUMister
+
+## Development
+* Use PyCharm
+* Install the plugin "[Env File](https://stackoverflow.com/questions/42708389/how-to-set-environment-variables-in-pycharm)" and get it from me
+* Create Python27 venv for the project
+
