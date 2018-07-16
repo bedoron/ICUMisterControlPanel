@@ -1,26 +1,29 @@
 ---
 services: app-service\web,app-service
 platforms: python
-author: cephalin
+author: bedoron
 ---
 
-# Flask and PostgreSQL sample for Azure App Service
+# Azure Cognitive face web interface and control panel
 
-This is a sample application that you can use to follow along with the tutorial at 
-[Build a Python and PostgreSQL web app in Azure](https://docs.microsoft.com/azure/app-service/app-service-web-tutorial-python-postgresql). 
+This App service flask based deployment is intended to be a demonstration control panel for our hackathon project, 
+It uses Azure Cognitive Face API in order to detect people and store them in the DB.
 
-The sample is a simple Python Flask application that connects to a PostgreSQL database via SQLAlchemy.
+The application is served using Flask and makes use of Bootstrap4 and jQuery for its interface. 
 
-The database connection information is specified via environment variables `DBHOST`, `DBPASS`, `DBUSER`, and `DBNAME`. This app always uses the default PostgreSQL port.
+In order to run this application you need to set the following variables:
+* Keyvault which holds faceAPI keys
+  *  KEY_VAULT_URI
+  * KEY_VAULT_URL (same as above, I'm too lazy to remove it)
+* Application which has access to a keyvault storing Cognitive Face API Keys: 
+  * AZURE_CLIENT_ID
+  * AZURE_CLIENT_SECRET
+  * AZURE_TENANT_ID
+* Cosmos DB Access configuration:
+  * DBNAME
+  * DBPASS
 
-# Contributing
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## Extra material
-https://docs.microsoft.com/en-us/azure/app-service/web-sites-python-configure
-https://docs.microsoft.com/en-us/azure/app-service/app-service-deploy-local-git
-https://docs.microsoft.com/en-us/python/azure/python-sdk-azure-authenticate?view=azure-python
-
-
-https://github.com/Azure-Samples/flask-postgresql-app/blob/master/app/app.py
+* Working website (for access contact me): http://icumistercontrolpanel.azurewebsites.net/
+* Appliance code: https://github.com/bedoron/ICUMister
