@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Detected strangers{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<style>
+.list-group{
+     flex-direction: row;
+ }
+</style>
+<ul>
+{% for face_id in faces %}
+    <li>
+        <img src="{{ url_for('face_get',object_id=face_id) }}" />
+        <div class="list-group">
+            <a href="{{ url_for('face_delete', object_id=face_id) }}" class="list-group-item list-group-item-action">delete</a>
+        </div>
+
+
+    </li>
+{% endfor %}
+</ul>
+
+{% endblock %}

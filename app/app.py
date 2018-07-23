@@ -16,6 +16,7 @@ from model.person import Person
 from person_group import PersonGroup
 from utils import get_db, JSONEncoder, initialize_cf, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP
 from forms import FaceUploadForm
+
 APP = Flask(__name__)
 
 APP.config['SECRET_KEY'] = os.environ['AZURE_CLIENT_SECRET']
@@ -139,7 +140,7 @@ def get_face_image(object_id):
     return Response(person.image, mimetype='image/jpeg')
 
 
-@APP.route('/face/delete/<object_id>')
+@APP.route('/person/delete/<object_id>')
 def delete_face(object_id):  # TODO: Sanitize this input
     person = Person.fetch(new_faces, object_id)
     result = person.delete()
@@ -231,12 +232,12 @@ def add_face():
         return render_template('add_face.html')
 
 
-@APP.route('/face/add', methods=['POST', 'GET'])
+@APP.route('/face/create', methods=['POST', 'GET'])
 def face_store():
     fuf = FaceUploadForm()
     if fuf.is_submitted():
-        face = Face.create(face_collection, fuf.file)
-        flash('Added face id ' + face.id, category='info')
+        face = Face.create(face_collection, fuf.file.data.read())
+        flash('Added face id ' + str(face.id), category='info')
         return redirect('/')
 
     return render_template('face_add_form.html', form=fuf)
@@ -244,11 +245,29 @@ def face_store():
 
 @APP.route('/face/<object_id>')
 def face_get(object_id):
-    face = Face.find(face_collection, object_id)
+    face = Face.find(face_collection, ObjectId(object_id))
     if not face:
         return "Error", 500
 
     return Response(face.image, mimetype='image/jpeg')
+
+
+@APP.route('/face/delete/<object_id>')
+def face_delete(object_id):
+    Face.delete(face_collection, ObjectId(object_id))
+    flash('Deleted face ' + str(object_id))
+    return redirect(url_for('show_all_faces'))
+
+
+@APP.route('/face/update/<object_id>')
+def face_update(object_id):
+    pass  # http://wtforms.simplecodes.com/docs/0.6.1/fields.html (look at "Select fields with dynamic choice value")
+
+
+@APP.route('/face')
+def show_all_faces():
+    faces = Face.find_all(face_collection)
+    return render_template('show_all_faces.html', faces=faces)
 
 
 @APP.route('/person/edit/<object_id>')

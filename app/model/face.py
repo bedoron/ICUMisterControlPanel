@@ -1,3 +1,5 @@
+import base64
+
 from pymongo.collection import Collection, ObjectId
 
 
@@ -10,10 +12,10 @@ class Face(object):
     }
     """
 
-    def __init__(self, id, image):
+    def __init__(self, id, encoded_image):
         super(Face, self).__init__()
         self._id = id
-        self._image = image
+        self._image = base64.b64decode(encoded_image)
 
     def read(self):
         return self._image
@@ -24,6 +26,9 @@ class Face(object):
 
     @property
     def id(self):
+        """
+        :rtype: ObjectId
+        """
         return self._id
 
     @staticmethod
@@ -33,8 +38,9 @@ class Face(object):
         :type binary_image: bytearray
         :rtype: Face
         """
-        result = face_collection.insert_one({'image': binary_image})
-        return Face(result.inserted_id, binary_image)
+        encoded_file = base64.b64encode(binary_image)
+        result = face_collection.insert_one({'image': encoded_file})
+        return Face(result.inserted_id, encoded_file)
 
     @staticmethod
     def find(face_collection, object_id):
@@ -44,4 +50,26 @@ class Face(object):
         :rtype: Face
         """
         face_document = face_collection.find_one({'_id': object_id})
-        return Face(face_document['id'], face_document['image']) if face_document else None
+        return Face(face_document['_id'], face_document['image']) if face_document else None
+
+    @staticmethod
+    def find_all(face_collection, query=None):
+        """
+        :type face_collection: Collection
+        :type query: dict
+        :rtype: list[str]
+        """
+        if query is None:
+            query = {}
+
+        return [record['_id'] for record in face_collection.find(query)]
+
+
+    @staticmethod
+    def delete(face_collection, object_id):
+        """
+        :type face_collection: Collection
+        :type object_id: ObjectId
+        :rtype: None
+        """
+        face_collection.delete_one({'_id': object_id})
