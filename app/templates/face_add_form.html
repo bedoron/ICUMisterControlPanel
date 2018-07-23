@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Detected strangers{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<h1>Add face form</h1>
+
+<form action="{{ url_for('face_store') }}" method="post" enctype="multipart/form-data" >
+    <label for="file">Face image:</label>
+    <input type="file" name="file" id="file" class="form-control-file"/>
+
+    <input type="submit" value="Submit" class="btn btn-default"/>
+    {{ form.csrf_token }}
+</form>
+
+<script type="text/javascript">
+</script>
+{% endblock %}

@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 import time
 
 from bson import ObjectId
@@ -10,17 +11,23 @@ from flask_mongo_sessions import MongoDBSessionInterface
 from pymongo.database import Database
 from werkzeug.datastructures import FileStorage
 
+from model.face import Face
 from model.person import Person
 from person_group import PersonGroup
 from utils import get_db, JSONEncoder, initialize_cf, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP
-
+from forms import FaceUploadForm
 APP = Flask(__name__)
+
+APP.config['SECRET_KEY'] = os.environ['AZURE_CLIENT_SECRET']
 
 db = get_db()  # type: Database
 APP.session_interface = MongoDBSessionInterface(APP, db, 'sessions')
 
 test_collection = db.get_collection('test')
 new_faces = db.get_collection('new_faces')
+
+face_collection = db.get_collection('faces')  # Images dump
+persons_collection = db.get_collection('persons')  # Only known people
 
 # Initialize Cognitive face
 try:
@@ -222,6 +229,51 @@ def add_face():
         return _store_uploaded_face()
     else:
         return render_template('add_face.html')
+
+
+@APP.route('/face/add', methods=['POST', 'GET'])
+def face_store():
+    fuf = FaceUploadForm()
+    if fuf.is_submitted():
+        face = Face.create(face_collection, fuf.file)
+        flash('Added face id ' + face.id, category='info')
+        return redirect('/')
+
+    return render_template('face_add_form.html', form=fuf)
+
+
+@APP.route('/face/<object_id>')
+def face_get(object_id):
+    face = Face.find(face_collection, object_id)
+    if not face:
+        return "Error", 500
+
+    return Response(face.image, mimetype='image/jpeg')
+
+
+@APP.route('/person/edit/<object_id>')
+def edit_person(object_id):
+    pass
+
+
+@APP.route('/notifications/<notification_id>')
+def show_notification(notification_id):  # Show in mobile page
+    pass
+
+
+@APP.route('/notifications/<notification_id>/dismiss', methods=['POST'])
+def dismiss(notification_id):
+    pass
+
+
+@APP.route('/notifications/<notification_id>/add', methods=['POST'])
+def new_person_from_notification(notification_id):  # Create a new person from notification image
+    pass
+
+
+@APP.route('/notifications/')
+def show_all_notifications():  # List all notifications (auditing?)
+    pass
 
 
 if __name__ == '__main__':
