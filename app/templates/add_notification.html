@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Face adder{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<h1>Create notification</h1>
+
+<form action="{{ url_for('create_notification') }}" method="post" enctype="multipart/form-data" >
+    {{ form.url.label }}:
+    {{ form.url(class_='form-control') }}<br />
+    {{ form.msg.label }}:
+    {{ form.msg(class_='form-control') }}
+
+    <input type="submit" value="Submit" class="btn btn-default"/>
+    {{ form.csrf_token }}
+</form>
+
+
+{% endblock %}

@@ -11,8 +11,11 @@ from msrestazure.azure_active_directory import MSIAuthentication, ServicePrincip
 from azure.keyvault import KeyVaultClient, KeyVaultAuthentication
 
 KEY_VAULT_URI = os.environ.get("KEY_VAULT_URI")
+
+MONGO_DBNAME = os.environ['DBNAME']
+
 MONGO_URI = "mongodb://%s:%s@%s.documents.azure.com:10255/?ssl=true&replicaSet=globaldb" % (
-    os.environ['DBNAME'], os.environ['DBPASS'], os.environ['DBNAME'])
+    MONGO_DBNAME, os.environ['DBPASS'], MONGO_DBNAME)
 
 KNOWN_PERSON_GROUP = "HackathonPersonGroup"
 UNKNOWN_PERSON_GROUP = "UnknownHackathonPersonGroup"
@@ -67,6 +70,12 @@ def initialize_cf():
     CF.BaseUrl.set('https://westeurope.api.cognitive.microsoft.com/face/v1.0')
     for face_group_name in [UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP, IGNORE_PERSON_GROUP]:
         create_person_group_if_needed(face_group_name)
+
+
+def setup_mongoengine(app):
+    app.config['MONGODB_SETTINGS'] = {
+        'host': MONGO_URI
+    }
 
 
 def get_db():
