@@ -258,10 +258,14 @@ def face_store():
         flash('Added face id ' + str(face.id), category='info')
 
         if id:
-            person = Person.objects.get(id=id)
-            if not person.person_id:
+            try:
+                person = Person.objects.get(id=id)
+            except DoesNotExist as ex:
+                person = None
+
+            if not person:
                 flash("Person doesn't belong to any PersonGroup", category='danger')
-                return render_template('face_add_form.html', form=fuf, person_id_param=id_param)
+                return render_template('face_add_form.html', form=fuf, person_id_param='')
 
             known_group = PersonGroup.known_person_group()
             result = known_group.add_face_to_person(person.person_id, face)
@@ -314,7 +318,8 @@ def show_all_persons():
 
 @APP.route('/person/<object_id>')
 def get_person(object_id):
-    pass
+    person = Person.objects.get(id=object_id)
+    return render_template('show_person.html', person=person)
 
 
 @APP.route('/person/create', methods=['GET', 'POST'])
