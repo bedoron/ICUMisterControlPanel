@@ -35,5 +35,11 @@
   {% endif %}
 {% endwith %}
     <div id="content" style="max-width: 500px; padding:10px;">{% block content %}{% endblock %}</div>
+
+<p class="navbar-btn">
+    <a href="{{ url_for('create_person') }}" class="btn btn-default">Add person</a>
+    <a href="{{ url_for('reset_training') }}" class="btn btn-default">Reset training</a>
+</p>
+
 </body>
 </html>

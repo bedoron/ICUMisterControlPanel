@@ -32,7 +32,10 @@
         <span class="sr-only">Next</span>
     </a>
 </div>
-{% endblock %}
+
+<p class="navbar-btn">
+    <a href="{{ url_for('face_store') }}?id={{ person.id }}" class="btn btn-default">Add face</a>s
+</p>
 
 <script>
 $('.carousel').carousel({
@@ -40,3 +43,5 @@ $('.carousel').carousel({
 })
 
 </script>
+
+{% endblock %}

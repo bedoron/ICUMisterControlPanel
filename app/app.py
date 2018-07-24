@@ -268,7 +268,12 @@ def face_store():
                 return render_template('face_add_form.html', form=fuf, person_id_param='')
 
             known_group = PersonGroup.known_person_group()
-            result = known_group.add_face_to_person(person.person_id, face)
+            try:
+                result = known_group.add_face_to_person(person.person_id, face)
+            except CognitiveFaceException as ex:
+                flash(ex.msg, category='danger')
+                return render_template('face_add_form.html', form=fuf, person_id_param=id_param)
+
             person.trained_faces = person.trained_faces + [str(face.id)]  # Lists are immutable
             person.save()
             face.person = person.id
@@ -340,6 +345,7 @@ def create_person():
         else:
             person_id = PersonGroup.known_person_group().add_person_by_name(person_name)
             form.person_id.data = person_id
+            form.person_group = PersonGroup.known_person_group().name
             person = form.save(validate=False)  # type: Person
             flash('Person {} successfully save'.format(person_name), category='info')
 
@@ -423,7 +429,7 @@ def detect():
     identified_list, identified_dict = knowns.identify_face(detected_face_guid)
 
     candidates = identified_dict[detected_face_guid]
-    most_suitable = max(candidates, lambda record: record['confidence'])
+    most_suitable = max(candidates, key=lambda record: record['confidence'])
 
     icum_face_id = str(face.save(face_collection))
     person = Person.objects.get(person_id=most_suitable['personId'])
@@ -433,7 +439,7 @@ def detect():
         return jsonify(status='person is unknown'), 404
 
     _handle_face_notification(icum_face_id, person)
-    return jsonify(status='Notified person icum id {}'.format(str(person.id))), 200
+    return jsonify(result=candidates, status='Notified person icum id {}'.format(str(person.id))), 200
 
 
 if __name__ == '__main__':
