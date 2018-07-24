@@ -74,6 +74,16 @@ class PersonGroup(object):
 
         return True
 
+    def add_person_by_name(self, person_name):
+        person_result = CF.person.create(self._person_group_id, person_name)
+        return person_result['personId']
+
+    def add_face_to_person(self, person_id, face):
+        return CF.person.add_face(face, self._person_group_id, person_id)
+
+    def train(self):
+        CF.person_group.train(self._person_group_id)
+
     def add_person(self, person):
         """
         :type person: PersonLegacy

@@ -74,7 +74,8 @@ def initialize_cf():
 
 def setup_mongoengine(app):
     app.config['MONGODB_SETTINGS'] = {
-        'host': MONGO_URI
+        'host': MONGO_URI,
+        'db': MONGO_DBNAME
     }
 
 

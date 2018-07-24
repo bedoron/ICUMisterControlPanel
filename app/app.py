@@ -246,13 +246,34 @@ def add_face():
 
 @APP.route('/face/create', methods=['POST', 'GET'])
 def face_store():
+    id = request.args.get('id', None)
+    id_param = '?id=' + id if id else ''
+
     fuf = FaceUploadForm()
     if fuf.is_submitted():
         face = Face.create(face_collection, fuf.file.data.read())
         flash('Added face id ' + str(face.id), category='info')
-        return redirect('/')
 
-    return render_template('face_add_form.html', form=fuf)
+        if id:
+            person = Person.objects.get(id=id)
+            if not person.person_id:
+                flash("Person doesn't belong to any PersonGroup", category='danger')
+                return render_template('face_add_form.html', form=fuf, person_id_param=id_param)
+
+            known_group = PersonGroup.known_person_group()
+            result = known_group.add_face_to_person(person.person_id, face)
+            person.trained_faces = person.trained_faces + [str(face.id)] # Lists are immutable
+            person.save()
+            face.person = person.id
+            face.save(face_collection)
+
+            known_group.train() # This shouldn't happen all the time but whatever
+
+            return redirect(url_for('get_person', object_id=str(person.id)))
+
+        return redirect(url_for('create_person'))
+
+    return render_template('face_add_form.html', form=fuf, person_id_param=id_param)
 
 
 @APP.route('/face/<object_id>')
@@ -282,10 +303,10 @@ def show_all_faces():
     return render_template('show_all_faces.html', faces=faces)
 
 
-@APP.route('/person')
-def show_all_people():
-    people = Person.f
-    pass
+@APP.route('/person/')
+def show_all_persons():
+    all_persons = Person.objects()
+    return render_template('show_all_persons.html', persons=all_persons)
 
 
 @APP.route('/person/<object_id>')
@@ -297,10 +318,20 @@ def get_person(object_id):
 def create_person():
     PersonForm = model_form(Person)
 
-    form = PersonForm()
+    form = PersonForm(request.form)
     if request.method == 'POST' and form.validate():
-        form.save(validate=False)
-        flash('Person {} successfully save'.format(form.name), category='danger')
+        # Create person for PersonGroup
+        person_name = form.name.data
+        person = Person.objects.get(name=person_name)
+        if person:
+            flash('Person {} already exists, not creating a new one'.format(person_name), category='info')
+        else:
+            person_id = PersonGroup.known_person_group().add_person_by_name(person_name)
+            form.person_id.data = person_id
+            person = form.save(validate=False)  # type: Person
+            flash('Person {} successfully save'.format(person_name), category='info')
+
+        return redirect(url_for('face_store') + '?id=' + str(person.id))
 
     return render_template('person_form.html', form=form)
 

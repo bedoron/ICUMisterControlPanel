@@ -8,3 +8,9 @@ class Person(Document):
     trained_faces = ListField(StringField(max_length=70), required=False)
 
     name = StringField(max_length=50, requred=True)
+    meta = {
+        'collection': 'persons',
+        'ordering': ['-_id'],
+        'auto_create_index': True,
+        'strict': False
+    }
