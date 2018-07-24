@@ -269,6 +269,11 @@ def show_all_faces():
     faces = Face.find_all(face_collection)
     return render_template('show_all_faces.html', faces=faces)
 
+@APP.route('/person')
+def show_all_people():
+    people = Person.f
+    pass
+
 @APP.route('/person/<object_id>')
 def get_person(object_id):
     pass
