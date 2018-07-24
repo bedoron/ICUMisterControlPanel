@@ -108,6 +108,7 @@ class NotificationHubClient:
                 "Error sending notification. Received HTTP code " + str(response.status) + " " + response.reason)
 
         connection.close()
+        return response
 
     def send_notification(self, notification, tag_or_tag_expression=None):
         url = self.Endpoint + self.HubName + '/messages' + self.API_VERSION
@@ -140,7 +141,7 @@ class NotificationHubClient:
         if notification.headers is not None:
             headers.update(notification.headers)
 
-        self.make_http_request(url, payload_to_send, headers)
+        return self.make_http_request(url, payload_to_send, headers)
 
     def send_apple_notification(self, payload, tags=""):
         nh = Notification("apple", payload)
@@ -148,7 +149,7 @@ class NotificationHubClient:
 
     def send_gcm_notification(self, payload, tags=""):
         nh = Notification("gcm", payload)
-        self.send_notification(nh, tags)
+        return self.send_notification(nh, tags)
 
     def send_adm_notification(self, payload, tags=""):
         nh = Notification("adm", payload)

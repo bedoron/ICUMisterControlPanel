@@ -6,7 +6,7 @@ from mongoengine.document import Document
 
 
 class Notification(Document):
-    icum_face_id = URLField(requred=False)
+    icum_face_id = StringField(requred=False)
     msg = StringField(max_length=500, required=True)
     msg_type = StringField(max_length=15, required=False)
 

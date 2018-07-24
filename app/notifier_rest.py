@@ -16,4 +16,4 @@ class NotifierREST(object):
             'data': notification.to_eventhub_json()
         }
 
-        hub.send_gcm_notification(payload)
+        return hub.send_gcm_notification(payload)

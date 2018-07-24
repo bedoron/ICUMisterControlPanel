@@ -416,7 +416,7 @@ def _handle_face_notification(icum_face_id, person=None):
 
     event_hub_connection_string = get_secret("NOTIFICATION-HUB-CONNECTION-STRING")
     notifier = NotifierREST(event_hub_connection_string)
-    notifier.notify(notification)
+    return notifier.notify(notification)
 
 
 @APP.route('/detect', methods=['POST'])
@@ -438,8 +438,8 @@ def detect():
         _handle_face_notification(icum_face_id)
         return jsonify(status='person is unknown'), 404
 
-    _handle_face_notification(icum_face_id, person)
-    return jsonify(result=candidates, status='Notified person icum id {}'.format(str(person.id))), 200
+    msg = _handle_face_notification(icum_face_id, person)
+    return jsonify(candidates=candidates, status='Notified person icum id {}'.format(str(person.id))), msg.status
 
 
 if __name__ == '__main__':
