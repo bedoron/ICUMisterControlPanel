@@ -54,15 +54,18 @@ class Face(object):
         return self._id
 
     @staticmethod
-    def create(face_collection, binary_image):
+    def create(face_collection, binary_image, store=True):
         """
         :type face_collection: Collection
         :type binary_image: bytearray
         :rtype: Face
         """
         encoded_file = base64.b64encode(binary_image)
-        result = face_collection.insert_one({'image': encoded_file})
-        return Face(result.inserted_id, encoded_file)
+        if store:
+            result = face_collection.insert_one({'image': encoded_file})
+            return Face(result.inserted_id, encoded_file)
+        else:
+            return Face(None, encoded_file)
 
     @staticmethod
     def find(face_collection, object_id):
