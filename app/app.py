@@ -9,6 +9,7 @@ from flask import Flask
 from flask import render_template, jsonify, request, flash, redirect, Response, url_for
 from flask_mongo_sessions import MongoDBSessionInterface
 from flask_mongoengine.wtf import model_form
+from mongoengine import DoesNotExist
 from pymongo.database import Database
 from werkzeug.datastructures import FileStorage
 from flask_mongoengine import MongoEngine
@@ -19,13 +20,15 @@ from model.face import Face
 from model.personlegacy import PersonLegacy
 from person_group import PersonGroup
 from utils import get_db, JSONEncoder, initialize_cf, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP, \
-    setup_mongoengine
-from forms import FaceUploadForm, PersonCreateForm
+    setup_mongoengine, get_secret
+from forms import FaceUploadForm
+from notifier_rest import NotifierREST
 
 APP = Flask(__name__)
 
 # This is for XHR
 APP.config['SECRET_KEY'] = os.environ['AZURE_CLIENT_SECRET']
+# This is bad :(
 APP.config['WTF_CSRF_ENABLED'] = False
 
 setup_mongoengine(APP)
@@ -255,19 +258,28 @@ def face_store():
         flash('Added face id ' + str(face.id), category='info')
 
         if id:
-            person = Person.objects.get(id=id)
-            if not person.person_id:
+            try:
+                person = Person.objects.get(id=id)
+            except DoesNotExist as ex:
+                person = None
+
+            if not person:
                 flash("Person doesn't belong to any PersonGroup", category='danger')
-                return render_template('face_add_form.html', form=fuf, person_id_param=id_param)
+                return render_template('face_add_form.html', form=fuf, person_id_param='')
 
             known_group = PersonGroup.known_person_group()
-            result = known_group.add_face_to_person(person.person_id, face)
-            person.trained_faces = person.trained_faces + [str(face.id)] # Lists are immutable
+            try:
+                result = known_group.add_face_to_person(person.person_id, face)
+            except CognitiveFaceException as ex:
+                flash(ex.msg, category='danger')
+                return render_template('face_add_form.html', form=fuf, person_id_param=id_param)
+
+            person.trained_faces = person.trained_faces + [str(face.id)]  # Lists are immutable
             person.save()
             face.person = person.id
             face.save(face_collection)
 
-            known_group.train() # This shouldn't happen all the time but whatever
+            known_group.train()  # This shouldn't happen all the time but whatever
 
             return redirect(url_for('get_person', object_id=str(person.id)))
 
@@ -311,7 +323,8 @@ def show_all_persons():
 
 @APP.route('/person/<object_id>')
 def get_person(object_id):
-    pass
+    person = Person.objects.get(id=object_id)
+    return render_template('show_person.html', person=person)
 
 
 @APP.route('/person/create', methods=['GET', 'POST'])
@@ -322,12 +335,17 @@ def create_person():
     if request.method == 'POST' and form.validate():
         # Create person for PersonGroup
         person_name = form.name.data
-        person = Person.objects.get(name=person_name)
+        try:
+            person = Person.objects.get(name=person_name)
+        except DoesNotExist as ex:
+            person = None
+
         if person:
             flash('Person {} already exists, not creating a new one'.format(person_name), category='info')
         else:
             person_id = PersonGroup.known_person_group().add_person_by_name(person_name)
             form.person_id.data = person_id
+            form.person_group = PersonGroup.known_person_group().name
             person = form.save(validate=False)  # type: Person
             flash('Person {} successfully save'.format(person_name), category='info')
 
@@ -380,5 +398,49 @@ def show_all_notifications():
     return render_template('show_all_notifications.html', notifications=all_notifications)
 
 
+def _handle_face_notification(icum_face_id, person=None):
+    """
+    No person implies that the person is unknown
+    :type icum_face_id: str
+    :type person: Person
+    """
+    if not person:
+        msg = "Unknown person detected !"
+        msg_type = 'unknown'
+    else:
+        msg = "Person '{}' detected !".format(person.name)
+        msg_type = 'known'
+
+    notification = Notification(msg=msg, icum_face_id=icum_face_id, msg_type=msg_type)
+    notification.save()
+
+    event_hub_connection_string = get_secret("NOTIFICATION-HUB-CONNECTION-STRING")
+    notifier = NotifierREST(event_hub_connection_string)
+    return notifier.notify(notification)
+
+
+@APP.route('/detect', methods=['POST'])
+def detect():
+    face_bytes = request.get_data()
+
+    face = Face.create(face_collection, face_bytes, store=False)
+    knowns = PersonGroup.known_person_group()
+    detected_face_guid = knowns.detected_face(face)  # TODO: Fix for multiple people
+    identified_list, identified_dict = knowns.identify_face(detected_face_guid)
+
+    candidates = identified_dict[detected_face_guid]
+    most_suitable = max(candidates, key=lambda record: record['confidence'])
+
+    icum_face_id = str(face.save(face_collection))
+    person = Person.objects.get(person_id=most_suitable['personId'])
+
+    if not person:
+        _handle_face_notification(icum_face_id)
+        return jsonify(status='person is unknown'), 404
+
+    msg = _handle_face_notification(icum_face_id, person)
+    return jsonify(candidates=candidates, status='Notified person icum id {}'.format(str(person.id))), msg.status
+
+
 if __name__ == '__main__':
-    APP.run()
+    APP.run(debug=True)

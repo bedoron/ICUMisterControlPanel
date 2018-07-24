@@ -102,6 +102,25 @@ class PersonGroup(object):
 
         return True
 
+    def detected_face(self, readable_object):
+        faces_guids = [face['faceId'] for face in CF.face.detect(readable_object)]
+        return faces_guids[0] if faces_guids and isinstance(faces_guids, list) else None
+
+    def identify_face(self, face_guids):
+        face_guids = face_guids if isinstance(face_guids, list) else [face_guids]
+        try:
+            identify = CF.face.identify(face_guids, self._person_group_id)
+            return identify, self._detected_face_to_map(identify)
+        except CognitiveFaceException as ex:
+            if ex.status_code not in [404, 400]:
+                raise ex
+
+        return [], {}
+
+    @staticmethod
+    def _detected_face_to_map(detected_face_result):
+        return {record['faceId']: record['candidates'] for record in detected_face_result}
+
     def identify(self, person):
         """
         :rtype person: Person
