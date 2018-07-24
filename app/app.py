@@ -15,7 +15,7 @@ from model.face import Face
 from model.person import Person
 from person_group import PersonGroup
 from utils import get_db, JSONEncoder, initialize_cf, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP
-from forms import FaceUploadForm
+from forms import FaceUploadForm, PersonCreateForm
 
 APP = Flask(__name__)
 
@@ -269,9 +269,24 @@ def show_all_faces():
     faces = Face.find_all(face_collection)
     return render_template('show_all_faces.html', faces=faces)
 
+@APP.route('/person/<object_id>')
+def get_person(object_id):
+    pass
 
-@APP.route('/person/edit/<object_id>')
-def edit_person(object_id):
+@APP.route('/person/create/<object_id>')
+def create_person(object_id):
+    pcf = PersonCreateForm()
+    if pcf.is_submitted():
+        pass
+
+    return render_template('')
+
+@APP.route('/person/update/<object_id>')
+def update_person(object_id):
+    pass
+
+@APP.route('/person/delete/<object_id>')
+def delete_person(object_id):
     pass
 
 
