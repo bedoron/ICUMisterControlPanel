@@ -8,23 +8,35 @@ from cognitive_face import CognitiveFaceException
 from flask import Flask
 from flask import render_template, jsonify, request, flash, redirect, Response, url_for
 from flask_mongo_sessions import MongoDBSessionInterface
+from flask_mongoengine.wtf import model_form
 from pymongo.database import Database
 from werkzeug.datastructures import FileStorage
+from flask_mongoengine import MongoEngine
 
+from model.person import Person
+from model.notification import Notification
 from model.face import Face
 from model.personlegacy import PersonLegacy
 from person_group import PersonGroup
-from utils import get_db, JSONEncoder, initialize_cf, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP
+from utils import get_db, JSONEncoder, initialize_cf, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP, \
+    setup_mongoengine
 from forms import FaceUploadForm, PersonCreateForm
 
 APP = Flask(__name__)
 
+# This is for XHR
 APP.config['SECRET_KEY'] = os.environ['AZURE_CLIENT_SECRET']
+APP.config['WTF_CSRF_ENABLED'] = False
+
+setup_mongoengine(APP)
+MongoEngine(APP)
 
 db = get_db()  # type: Database
-APP.session_interface = MongoDBSessionInterface(APP, db, 'sessions')
+APP.session_interface = MongoDBSessionInterface(APP, db, 'sessions')  # Setup session handler using mongo
 
+# TODO: Deprecated
 test_collection = db.get_collection('test')
+# TODO: Deprecated
 new_faces = db.get_collection('new_faces')
 
 face_collection = db.get_collection('faces')  # Images dump
@@ -269,26 +281,34 @@ def show_all_faces():
     faces = Face.find_all(face_collection)
     return render_template('show_all_faces.html', faces=faces)
 
+
 @APP.route('/person')
 def show_all_people():
     people = Person.f
     pass
 
+
 @APP.route('/person/<object_id>')
 def get_person(object_id):
     pass
 
+
 @APP.route('/person/create', methods=['GET', 'POST'])
 def create_person():
-    pcf = PersonCreateForm()
-    if pcf.is_submitted():
-        flash('Yo dawg!', category='danger')
+    PersonForm = model_form(Person)
 
-    return render_template('person_form.html', form=pcf)
+    form = PersonForm()
+    if request.method == 'POST' and form.validate():
+        form.save(validate=False)
+        flash('Person {} successfully save'.format(form.name), category='danger')
+
+    return render_template('person_form.html', form=form)
+
 
 @APP.route('/person/update/<object_id>')
 def update_person(object_id):
     pass
+
 
 @APP.route('/person/delete/<object_id>')
 def delete_person(object_id):
@@ -310,9 +330,23 @@ def new_person_from_notification(notification_id):  # Create a new person from n
     pass
 
 
+# Dummy method to create notification online
+@APP.route('/notifications/create', methods=['GET', 'POST'])
+def create_notification():  # Create a new person from notification image
+    NotificationForm = model_form(Notification, field_args={'msg': {'textarea': True}})
+
+    form = NotificationForm(request.form)
+    if request.method == 'POST' and form.validate():
+        form.save(validate=False)
+        flash('success!', category='success')
+
+    return render_template('add_notification.html', form=form)
+
+
 @APP.route('/notifications/')
-def show_all_notifications():  # List all notifications (auditing?)
-    pass
+def show_all_notifications():
+    all_notifications = Notification.objects()
+    return render_template('show_all_notifications.html', notifications=all_notifications)
 
 
 if __name__ == '__main__':

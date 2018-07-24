@@ -1,16 +1,14 @@
-from pymongo.collection import Collection, ObjectId
+from mongoengine import URLField, StringField
+from mongoengine.document import Document
 
 
-class Notification(object):
-    def __init__(self):
-        super(Notification, self).__init__()
+class Notification(Document):
+    url = URLField(required=True)
+    msg = StringField(max_length=500, required=True)
 
-    @staticmethod
-    def find(face_collection, object_id):
-        """
-
-        :type face_collection: Collection
-        :type object_id: ObjectId
-        :return:
-        """
-        pass
+    meta = {
+        'collection': 'notifications',
+        'ordering': ['-_id'],
+        'auto_create_index': True,
+        'strict': False
+    }

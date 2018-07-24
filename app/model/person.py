@@ -1,16 +1,10 @@
-from pymongo.collection import Collection, ObjectId
+from mongoengine import StringField, ListField
+from mongoengine.document import Document
 
 
-class Person(object):
-    def __init__(self):
-        super(Person, self).__init__()
+class Person(Document):
+    person_id = StringField(max_length=50, required=False)
+    person_group = StringField(max_length=100, required=False)
+    trained_faces = ListField(StringField(max_length=70), required=False)
 
-    @staticmethod
-    def find(face_collection, object_id):
-        """
-
-        :type face_collection: Collection
-        :type object_id: ObjectId
-        :return:
-        """
-        pass
+    name = StringField(max_length=50, requred=True)

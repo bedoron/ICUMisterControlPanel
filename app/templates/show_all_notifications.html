@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Detected strangers{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+
+<ul>
+{% for notification in notifications %}
+    <li>
+        {{ notification.url }}<br />
+        {{ notification.msg }}
+    </li>
+{% endfor %}
+</ul>
+
+{% endblock %}
