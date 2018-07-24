@@ -92,6 +92,13 @@ class PersonGroup(object):
 
         return True
 
+    def detect(self, face_image):
+        result = CF.face.detect(face_image, face_id=True, attributes="gender,age")
+        if len(result) > 0:
+            self._logger.info("Identified face at: %s", result)
+
+        return result
+
     def identify(self, person):
         """
         :rtype person: Person

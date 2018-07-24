@@ -278,6 +278,7 @@ def show_all_people():
 def get_person(object_id):
     pass
 
+
 @APP.route('/person/create', methods=['GET', 'POST'])
 def create_person():
     pcf = PersonCreateForm()
@@ -286,9 +287,11 @@ def create_person():
 
     return render_template('person_form.html', form=pcf)
 
+
 @APP.route('/person/update/<object_id>')
 def update_person(object_id):
     pass
+
 
 @APP.route('/person/delete/<object_id>')
 def delete_person(object_id):
@@ -312,7 +315,16 @@ def new_person_from_notification(notification_id):  # Create a new person from n
 
 @APP.route('/notifications/')
 def show_all_notifications():  # List all notifications (auditing?)
-    pass
+    return "HIIII", 200
+
+@APP.route('/detect', methods=['POST', 'GET'])
+def detect():
+    method = request.method
+    if method == "GET":
+        return "get is not supported!", 404
+    file = request.files.get('faceImage', None)
+    if file is None:
+        return "Please attach an image, so we have something to work with!", 404
 
 
 if __name__ == '__main__':
