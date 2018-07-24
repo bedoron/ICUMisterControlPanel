@@ -12,7 +12,7 @@ from pymongo.database import Database
 from werkzeug.datastructures import FileStorage
 
 from model.face import Face
-from model.person import Person
+from model.personlegacy import PersonLegacy
 from person_group import PersonGroup
 from utils import get_db, JSONEncoder, initialize_cf, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP
 from forms import FaceUploadForm, PersonCreateForm
@@ -69,13 +69,13 @@ def show_all():
 
 @APP.route('/person/json/<object_id>')
 def person_info(object_id):
-    person = Person.fetch(new_faces, object_id)
+    person = PersonLegacy.fetch(new_faces, object_id)
     return jsonify(person.document)
 
 
 @APP.route('/person/identify/<object_id>')
 def person_identify(object_id):
-    person = Person.fetch(new_faces, object_id)
+    person = PersonLegacy.fetch(new_faces, object_id)
     possible_matches = []
     for pg in [PersonGroup.known_person_group(), PersonGroup.unknown_person_group(), PersonGroup.ignore_person_group()]:
         identification_result = pg.identify(person)
@@ -85,7 +85,7 @@ def person_identify(object_id):
         for candidates in identification_result.values():
             for candidate in candidates:
                 person_id = candidate['personId']
-                matching_person = Person.fetch_by_person_id(new_faces, person_id)
+                matching_person = PersonLegacy.fetch_by_person_id(new_faces, person_id)
                 if not matching_person:
                     continue
 
@@ -102,7 +102,7 @@ def person_identify(object_id):
 def reset_training():
     PersonGroup.reset_all()
     for face_document in new_faces.find():
-        person = Person(new_faces, face_document)
+        person = PersonLegacy(new_faces, face_document)
         person.remove_all_trained_details()
 
     flash('Reset all training group', category='info')
@@ -111,7 +111,7 @@ def reset_training():
 
 @APP.route('/face/known/<object_id>')
 def is_face_known(object_id):
-    person = Person.fetch(new_faces, object_id)
+    person = PersonLegacy.fetch(new_faces, object_id)
 
     person_group_id = person.get_group_person_id(KNOWN_PERSON_GROUP)
     result = person_group_id is not None
@@ -124,25 +124,25 @@ def is_face_known(object_id):
 
 @APP.route('/face/unknown/<object_id>')
 def is_face_unknown(object_id):
-    person = Person.fetch(new_faces, object_id)
+    person = PersonLegacy.fetch(new_faces, object_id)
     return jsonify({'result': person.get_group_person_id(UNKNOWN_PERSON_GROUP)})
 
 
 @APP.route('/face/ignored/<object_id>')
 def is_face_ignored(object_id):
-    person = Person.fetch(new_faces, object_id)
+    person = PersonLegacy.fetch(new_faces, object_id)
     return jsonify({'result': person.get_group_person_id(IGNORE_PERSON_GROUP)})
 
 
 @APP.route('/face/image/<object_id>')
 def get_face_image(object_id):
-    person = Person.fetch(new_faces, object_id)
+    person = PersonLegacy.fetch(new_faces, object_id)
     return Response(person.image, mimetype='image/jpeg')
 
 
 @APP.route('/person/delete/<object_id>')
 def delete_face(object_id):  # TODO: Sanitize this input
-    person = Person.fetch(new_faces, object_id)
+    person = PersonLegacy.fetch(new_faces, object_id)
     result = person.delete()
     if result is None:
         flash('Failed deleting: {}'.format(json.dumps(result)))
@@ -169,7 +169,7 @@ def train_face_unknown(object_id):
 
 
 def train_face(object_id, person_group):
-    person = Person.fetch(new_faces, object_id)
+    person = PersonLegacy.fetch(new_faces, object_id)
     try:
         person_group.add_person(person)
     except CognitiveFaceException as ex:
@@ -273,13 +273,13 @@ def show_all_faces():
 def get_person(object_id):
     pass
 
-@APP.route('/person/create/<object_id>')
-def create_person(object_id):
+@APP.route('/person/create', methods=['GET', 'POST'])
+def create_person():
     pcf = PersonCreateForm()
     if pcf.is_submitted():
-        pass
+        flash('Yo dawg!', category='danger')
 
-    return render_template('')
+    return render_template('person_form.html', form=pcf)
 
 @APP.route('/person/update/<object_id>')
 def update_person(object_id):

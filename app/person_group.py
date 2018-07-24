@@ -3,7 +3,7 @@ import time
 from cognitive_face import CognitiveFaceException
 from utils import KNOWN_PERSON_GROUP, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP
 import cognitive_face as CF
-from model.person import Person
+from model.personlegacy import PersonLegacy
 
 
 class PersonGroup(object):
@@ -64,7 +64,7 @@ class PersonGroup(object):
 
     def remove_person(self, person):
         """
-        :type person: Person
+        :type person: PersonLegacy
         """
         if not self.has_person(person):
             return False
@@ -76,7 +76,7 @@ class PersonGroup(object):
 
     def add_person(self, person):
         """
-        :type person: Person
+        :type person: PersonLegacy
         :raises CognitiveFaceException:
         """
         if self.has_person(person):
@@ -114,7 +114,7 @@ class PersonGroup(object):
         return all([len(candidates) != 0 for candidates in identified.values()]) if identified else False
 
     def __contains__(self, person):
-        if not isinstance(person, Person):
+        if not isinstance(person, PersonLegacy):
             raise TypeError()
 
         return self.has_person(person)
