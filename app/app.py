@@ -12,6 +12,7 @@ from flask_mongoengine.wtf import model_form
 from pymongo.database import Database
 from werkzeug.datastructures import FileStorage
 from flask_mongoengine import MongoEngine
+from FaceDetectionUtils import FaceDetectionUtils
 
 from model.person import Person
 from model.notification import Notification
@@ -90,7 +91,7 @@ def person_identify(object_id):
     person = PersonLegacy.fetch(new_faces, object_id)
     possible_matches = []
     for pg in [PersonGroup.known_person_group(), PersonGroup.unknown_person_group(), PersonGroup.ignore_person_group()]:
-        identification_result = pg.identify(person)
+        identification_result = pg.identify(person.detected_ids)
         if not identification_result:
             continue
 
@@ -346,12 +347,21 @@ def create_notification():  # Create a new person from notification image
 
 @APP.route('/detect', methods=['POST', 'GET'])
 def detect():
-    method = request.method
-    if method == "GET":
+    if request.method == "GET":
         return "get is not supported!", 404
-    file = request.files.get('faceImage', None)
-    if file is None:
+
+    image = request.files.get('faceImage', None)
+    if image is None:
         return "Please attach an image, so we have something to work with!", 404
+
+    face_detection_result = FaceDetectionUtils.detect_faces_from_jpeg(image)
+    face_ids = [result['faceId'] for result in face_detection_result]
+    pg = PersonGroup.create_known_person_group()
+    identification_result = pg.identify(face_ids)
+
+    new_doc = Notification(msg="someone at doorstep!", type="unknown").save()
+    url = "https://icumister.com/notifications/{}".format(new_doc.id)
+
 
 @APP.route('/notifications/')
 def show_all_notifications():

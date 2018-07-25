@@ -92,21 +92,15 @@ class PersonGroup(object):
 
         return True
 
-    def detect(self, face_image):
-        result = CF.face.detect(face_image, face_id=True, attributes="gender,age")
-        if len(result) > 0:
-            self._logger.info("Identified face at: %s", result)
-
-        return result
-
-    def identify(self, person):
+    def identify(self, face_ids):
         """
-        :rtype person: Person
+        :type face_ids: list
+        :rtype: dict
         """
         try:
-            identified = CF.face.identify(person.detected_ids, self._person_group_id)
-            actually_identified = filter(lambda record: record['faceId'] in person.detected_ids, identified)
-            return {record['faceId']: record['candidates'] for record in actually_identified}
+            identified = CF.face.identify(face_ids, self._person_group_id)
+            # actually_identified = filter(lambda record: record['faceId'] in person.detected_ids, identified)
+            return {record['faceId']: record['candidates'] for record in identified}
         except CognitiveFaceException as ex:
             if ex.status_code not in [404, 400]:
                 raise ex
