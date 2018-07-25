@@ -5,13 +5,17 @@
 {% endblock %}
 {% block content %}
 <h1>Notification history</h1>
-<ul>
+<div class="list-group">
 {% for notification in notifications %}
-    <li>
-        {{ notification.url }}<br />
-        {{ notification.msg }}
-    </li>
+    <a href="{{ url_for('show_notification', notification_id=notification.id)}}" class="list-group-item list-group-item-action flex-column align-items-start">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">{{ notification.id }}</h5>
+      <small>X days ago</small>
+    </div>
+    <p class="mb-1">{{ notification.msg }}</p>
+    <small>{{ notification.msg_type if notification.msg_type else 'Unknown' }}</small>
+  </a>
 {% endfor %}
-</ul>
+</div>
 
 {% endblock %}
