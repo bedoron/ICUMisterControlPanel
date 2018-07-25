@@ -418,7 +418,7 @@ def show_all_notifications():
     return render_template('show_all_notifications.html', notifications=all_notifications)
 
 
-def _handle_face_notification(icum_face_id, person=None):
+def _handle_face_notification(icum_face_id, person=None, attributes=None):
     """
     No person implies that the person is unknown
     :type icum_face_id: str
@@ -427,11 +427,12 @@ def _handle_face_notification(icum_face_id, person=None):
     if not person:
         msg = "Unknown person detected !"
         msg_type = 'unknown'
+        attributes=attributes
     else:
         msg = "Person '{}' detected !".format(person.name)
         msg_type = 'known'
 
-    notification = Notification(msg=msg, icum_face_id=icum_face_id, msg_type=msg_type)
+    notification = Notification(msg=msg, icum_face_id=icum_face_id, msg_type=msg_type, attributes=attributes)
     notification.save()
 
     event_hub_connection_string = get_secret("NOTIFICATION-HUB-CONNECTION-STRING")
@@ -445,7 +446,9 @@ def detect():
 
     face = Face.create(face_collection, face_bytes, store=False)
     knowns = PersonGroup.known_person_group()
-    detected_face_guid = knowns.detected_face(face)  # TODO: Fix for multiple people
+    detected_face = knowns.detected_face(face)  # TODO: Fix for multiple people
+    detected_face_guid = detected_face['id']
+
     identified_dict = knowns.identify_face(detected_face_guid)
 
     candidates = identified_dict[detected_face_guid]
@@ -456,7 +459,7 @@ def detect():
     icum_face_id = str(face.save(face_collection))
 
     if not person:
-        _handle_face_notification(icum_face_id)
+        _handle_face_notification(icum_face_id, attributes=detected_face['attributes'])
         return jsonify(status="person is unknown"), 404
 
     msg = _handle_face_notification(icum_face_id, person)
