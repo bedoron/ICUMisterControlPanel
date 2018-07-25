@@ -18,9 +18,11 @@ class Notification(Document):
     }
 
     def to_eventhub_json(self):
-        return {
+        res = {
             'url': url_for('show_notification', notification_id=str(self.id)),
-            'message': self.msg,
+            'msg': self.msg,
             'type': self.msg_type if self.msg_type else 'unknown',
-            'timestamp': str(datetime.datetime.now())
+            'timestamp': str(datetime.datetime.now()),
+            'time_elapsed': 5
         }
+        return res
