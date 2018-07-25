@@ -367,7 +367,9 @@ def delete_person(object_id):
 
 @APP.route('/notifications/<notification_id>')
 def show_notification(notification_id):  # Show in mobile page
-    pass
+    notification = Notification.objects.get(id=notification_id)
+    pretty = notification.to_json()
+    return "we recognized someone at your door!\n details:{}".format(pretty)
 
 
 @APP.route('/notifications/<notification_id>/dismiss', methods=['POST'])
