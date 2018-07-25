@@ -23,7 +23,7 @@
             {%else%}
                 <input class="btn btn-primary" type="button" value="Unclassified">
             {%endif%}
-            <hr>
+            <hr/>
             <div style="flex-direction: col; margin-bottom: 4px;">
                 {% for face_id in person.trained_faces %}
                 <img style="min-height: 130px !important; max-height:130px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = face_id) }}"/>
@@ -31,11 +31,12 @@
                 {% endfor %}
             </div>
         </div>
+    </a>
     {%else%}
-        <hr>
+        <hr/>
         We didn't recognize this person in your trust list, watch out!
     {%endif%}
-    <hr>
+    <hr/>
 </ul>
 
 {% endblock %}
