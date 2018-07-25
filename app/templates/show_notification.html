@@ -7,7 +7,7 @@
 <h1>Doorbell Notification</h1>
 <ul>
 <hr>
-    <img style="min-height: 80px !important; max-height:80px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = notification.icum_face_id) }}"/>
+    <img style="min-height: 200px !important; max-height:200px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = notification.icum_face_id) }}"/>
 
     Stood at your doorstep.
     <br>
@@ -26,12 +26,14 @@
             <hr>
             <div style="flex-direction: col; margin-bottom: 4px;">
                 {% for face_id in person.trained_faces %}
-                <img style="min-height: 80px !important; max-height:80px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = face_id) }}"/>
+                <img style="min-height: 130px !important; max-height:130px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = face_id) }}"/>
 
                 {% endfor %}
             </div>
         </div>
-    </a>
+    {%else%}
+        <hr>
+        We didn't recognize this person in your trust list, watch out!
     {%endif%}
     <hr>
 </ul>
