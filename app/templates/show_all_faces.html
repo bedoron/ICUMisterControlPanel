@@ -4,24 +4,26 @@
 {{ super() }}
 {% endblock %}
 {% block content %}
-<style>
-.list-group{
-     flex-direction: row;
- }
-</style>
-
+<div class="container-fluid">
 <h1>All Faces</h1>
-<ul>
-{% for face_id in faces %}
-    <li>
-        <img src="{{ url_for('face_get',object_id=face_id) }}" />
-        <div class="list-group">
-            <a href="{{ url_for('face_delete', object_id=face_id) }}" class="list-group-item list-group-item-action">delete</a>
+<ul class="list-group">
+{% for face in faces %}
+    <li class="list-group-item">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <img src="{{ url_for('face_get',object_id=face.id) }}" style="width: 400px"/>
+                </div>
+                <div class="col">
+                    <div class="list-group">
+                        <a href="{{ url_for('get_person', object_id=face.person) }}" class="list-group-item list-group-item-action">Person</a>
+                        <a href="{{ url_for('face_delete', object_id=face.id) }}" class="list-group-item list-group-item-action">delete</a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-
     </li>
 {% endfor %}
 </ul>
-
+</div>
 {% endblock %}

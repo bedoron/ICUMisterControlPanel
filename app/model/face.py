@@ -89,7 +89,7 @@ class Face(object):
         if query is None:
             query = {}
 
-        return [record['_id'] for record in face_collection.find(query)]
+        return [Face(record['_id'], record['image'], record['person']) for record in face_collection.find(query)]
 
     @staticmethod
     def delete(face_collection, object_id):
