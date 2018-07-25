@@ -427,7 +427,7 @@ def detect():
     face = Face.create(face_collection, face_bytes, store=False)
     knowns = PersonGroup.known_person_group()
     detected_face_guid = knowns.detected_face(face)  # TODO: Fix for multiple people
-    identified_list, identified_dict = knowns.identify_face(detected_face_guid)
+    identified_dict = knowns.identify_face(detected_face_guid)
 
     candidates = identified_dict[detected_face_guid]
 

@@ -110,12 +110,12 @@ class PersonGroup(object):
         face_guids = face_guids if isinstance(face_guids, list) else [face_guids]
         try:
             identify = CF.face.identify(face_guids, self._person_group_id)
-            return identify, self._detected_face_to_map(identify)
+            return  self._detected_face_to_map(identify)
         except CognitiveFaceException as ex:
             if ex.status_code not in [404, 400]:
                 raise ex
 
-        return [], {}
+        return {}
 
     @staticmethod
     def _detected_face_to_map(detected_face_result):
