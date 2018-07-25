@@ -1,11 +1,15 @@
 import base64
+import io
 import json
 import os
 import time
+from StringIO import StringIO
 
+import PIL
+from PIL import Image
 from bson import ObjectId
 from cognitive_face import CognitiveFaceException
-from flask import Flask, make_response
+from flask import Flask, make_response, send_file
 from flask import render_template, jsonify, request, flash, redirect, Response, url_for
 from flask_mongo_sessions import MongoDBSessionInterface
 from flask_mongoengine.wtf import model_form
@@ -16,7 +20,7 @@ from flask_mongoengine import MongoEngine
 
 from model.person import Person
 from model.notification import Notification
-from model.face import Face
+from model.face import Face, FaceDocument
 from model.personlegacy import PersonLegacy
 from person_group import PersonGroup
 from utils import get_db, JSONEncoder, initialize_cf, IGNORE_PERSON_GROUP, UNKNOWN_PERSON_GROUP, KNOWN_PERSON_GROUP, \
@@ -63,6 +67,7 @@ def exception_handler(ex):
 @APP.route('/')
 def main_page():
     return redirect(url_for('show_all_persons'))
+
 
 def show_all():
     pending_users = []
@@ -250,61 +255,100 @@ def add_face():
         return render_template('add_face.html')
 
 
+def set_person_id(template, id):
+    response = make_response(template)
+    if id:
+        response.headers['X-Person-ID'] = id
+
+    return response
+
+
 @APP.route('/face/create', methods=['POST', 'GET'])
 def face_store():
     id = request.args.get('id', None)
     id_param = '?id=' + id if id else ''
 
     fuf = FaceUploadForm()
-    response_back_to_face_create = make_response(render_template('face_add_form.html', form=fuf, person_id_param=id_param))
+
+    response_back_to_face_create = make_response(
+        render_template('face_add_form.html', form=fuf, person_id_param=id_param))
     if id:
         response_back_to_face_create.headers['X-Person-ID'] = id
 
     if fuf.is_submitted():
-        face = Face.create(face_collection, fuf.file.data.read())
-        flash('Added face id ' + str(face.id), category='info')
-
-        if id:
-            try:
-                person = Person.objects.get(id=id)
-            except DoesNotExist as ex:
-                person = None
-
-            if not person:
-                flash("Person doesn't belong to any PersonGroup", category='danger')
-                response = make_response(render_template('face_add_form.html', form=fuf, person_id_param=''))
-                if id:
-                    response.headers['X-Person-ID'] = id
-                return response
-
-            known_group = PersonGroup.known_person_group()
-            try:
-                result = known_group.add_face_to_person(person.person_id, face)
-            except CognitiveFaceException as ex:
-                flash(ex.msg, category='danger')
-                return response_back_to_face_create
-
-            person.trained_faces = person.trained_faces + [str(face.id)]  # Lists are immutable
-            person.save()
-            face.person = person.id
-            face.save(face_collection)
-
-            known_group.train()  # This shouldn't happen all the time but whatever
-
-            return redirect(url_for('get_person', object_id=str(person.id)))
-
-        return redirect(url_for('create_person'))
+        return handle_face_upload(fuf, id, response_back_to_face_create)
 
     return response_back_to_face_create
 
 
+def handle_face_upload(fuf, id, response_back_to_face_create):
+    face = FaceDocument(image=fuf.file.data.read())
+    flash('Added face id ' + str(id), category='info')
+
+    try:
+        person = Person.objects.get(id=id) if id else None
+    except DoesNotExist as ex:
+        person = None
+
+    if not person:
+        flash("Can't create face without person context '{}'".format(id), category='warning')
+        return redirect(url_for('create_person'))
+
+    face.person = person.id
+    known_group = PersonGroup.known_person_group()
+
+    try:
+        result = known_group.add_face_to_person(person.person_id, face)
+    except CognitiveFaceException as ex:
+        flash(ex.msg, category='danger')
+        return response_back_to_face_create
+
+    face.save()
+    person.trained_faces = person.trained_faces + [str(face.id)]  # Lists are immutable
+    person.save()
+    known_group.train()  # This shouldn't happen all the time but whatever
+    return redirect(url_for('get_person', object_id=str(person.id)))
+
+
+# @APP.route('/face_migrate')
+# def face_document_migrate():
+#     iter = face_collection.find(projection={'image': False})
+#     for document in iter:
+#         old_face = Face.find(face_collection, document['_id'])
+#         new_face = FaceDocument(id=old_face.id, image=old_face.read(), person=old_face.person)
+#         new_face.save()
+#
+#     return 'Ok', 200
+
+
 @APP.route('/face/<object_id>')
 def face_get(object_id):
-    face = Face.find(face_collection, ObjectId(object_id))
-    if not face:
+    face = FaceDocument.objects.get(id=object_id)
+
+    width = request.args.get('w', default=None)
+    width = int(width) if width else None
+    height = request.args.get('h', default=None)
+    height = int(height) if height else None
+
+    if not width and not height:
+        return Response(face.image.read(), mimetype='image/jpeg')
+
+    img = Image.open(face.image)
+
+    if width:
+        wpercent = (width / float(img.size[0]))
+        height = int((float(img.size[1]) * float(wpercent)))
+    elif height:
+        hpercent = (height / float(img.size[1]))
+        width = int((float(img.size[0]) * float(hpercent)))
+    else:
         return "Error", 500
 
-    return Response(face.image, mimetype='image/jpeg')
+    roiImg = img.resize((width, height), PIL.Image.ANTIALIAS)  # we should probably cache this
+    img_io = StringIO()
+    roiImg.save(img_io, 'JPEG', quality=80)
+    img_io.seek(0)
+    return send_file(img_io, mimetype='image/jpeg')
 
 
 @APP.route('/face/delete/<object_id>')
@@ -368,7 +412,6 @@ def create_person():
     return render_template('person_form.html', form=form)
 
 
-
 @APP.route('/person/update/<object_id>')
 def update_person(object_id):
     pass
@@ -383,9 +426,9 @@ def delete_person(object_id):
 def show_notification(notification_id):  # Show in mobile page
     notification = Notification.objects.get(id=notification_id)
     face_id = notification.icum_face_id
-    face = Face.find(face_collection, ObjectId(face_id))
-    person = Person.objects.get(id=face.person) if face.person else None
-    return render_template('show_notification.html', notification=notification, person=person, image=face.image)
+    face = FaceDocument.objects.get(id=face_id)
+    # person = Person.objects.get(id=face.person) if face.person else None
+    return render_template('show_notification.html', notification=notification, face=face, person=face.person)
     # return "we recognized someone at your door!\n details:{}".format(pretty)
 
 
@@ -427,7 +470,7 @@ def _handle_face_notification(icum_face_id, person=None, attributes=None):
     if not person:
         msg = "Unknown person detected !"
         msg_type = 'unknown'
-        attributes=attributes
+        attributes = attributes
     else:
         msg = "Person '{}' detected !".format(person.name)
         msg_type = 'known'
@@ -443,10 +486,11 @@ def _handle_face_notification(icum_face_id, person=None, attributes=None):
 @APP.route('/detect', methods=['POST'])
 def detect():
     face_bytes = request.get_data()
+    face = FaceDocument(image=face_bytes)
+    face.save()
 
-    face = Face.create(face_collection, face_bytes, store=False)
     knowns = PersonGroup.known_person_group()
-    detected_face = knowns.detected_face(face)  # TODO: Fix for multiple people
+    detected_face = knowns.detected_face(face.image)  # TODO: Fix for multiple people
     detected_face_guid = detected_face['id']
 
     identified_dict = knowns.identify_face(detected_face_guid)
@@ -456,7 +500,8 @@ def detect():
     most_suitable = max(candidates, key=lambda record: record['confidence']) if candidates else None
     person = Person.objects.get(person_id=most_suitable['personId']) if candidates else None
     face.person = person.id if person else None
-    icum_face_id = str(face.save(face_collection))
+    face.save()
+    icum_face_id = str(face.id)
 
     if not person:
         _handle_face_notification(icum_face_id, attributes=detected_face['attributes'])

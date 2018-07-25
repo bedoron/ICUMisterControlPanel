@@ -4,22 +4,24 @@
 {{ super() }}
 {% endblock %}
 {% block content %}
-<div class="justify-content-center container">
-<h1>{{ person.name }}
+<div class="justify-content-center container align-content-center text-center">
+<h1 class="text-center">{{ person.name }}
     <span class="badge badge-secondary">
-        {% if person.person_group %}
-            {{person.person_group}}
-        {% else %}
-            Untrained
-        {% endif %}
+        {{ 'Untrained' if person.person_group else person.person_group }}
     </span>
 </h1>
+<style>
+.carousel-inner img {
+  margin: auto;
+}
+</style>
 
-<div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+
+<div id="carouselExampleControls" class="carousel slide " data-ride="carousel">
     <div class="carousel-inner">
         {% for face_id in person.trained_faces %}
         <div class="carousel-item{{ ' active' if loop.index == 1 else '' }}">
-            <img class="d-block w-75 img-thumbnail" src="{{ url_for('face_get', object_id = face_id) }}" alt="{{ face_id }}">
+            <img class="d-block img-thumbnail" src="{{ url_for('face_get', object_id = face_id) }}?h=450" alt="{{ face_id }}">
         </div>
         {% endfor %}
     </div>

@@ -4,49 +4,25 @@
 {{ super() }}
 {% endblock %}
 {% block content %}
-
-<ul>
-<hr/>
-
-<h1>Doorbell Notification</h1>
-    <img style="min-height: 200px !important; max-height:200px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = notification.icum_face_id) }}"/>
-    <br/>
-    Stood at your doorstep.
-    <br/>
-    <br/>
-    {% if person %}
-
-    We Recognized it as the following person:
-    <a href="{{ url_for('get_person', object_id=person.id) }}" class="btn btn-outline-secondary" style="min-width:100%;">
-        <div  style="min-width:100%; text-align: left">
-            <b>Name:    </b>{{ person.name }}<br/>
-            {% if person.person_group %}
-                <input class="btn btn-primary" type="button" value="{{ person.person_proup }}">
-            {%else%}
-                <input class="btn btn-primary" type="button" value="Unclassified">
-            {%endif%}
-            <hr/>
-            <div style="flex-direction: col; margin-bottom: 4px;">
-                {% for face_id in person.trained_faces %}
-                <img style="min-height: 130px !important; max-height:130px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = face_id) }}"/>
-
-                {% endfor %}
-            </div>
-        </div>
-    </a>
-    {%else%}
-
-        We didn't recognize this person, watch out!
-        <br/>
-        <hr/>
-        <h2>Attributes:</h2>
-        Age:
-        {{ notification.attributes.age }}
-        <br/>
-        Gender:
-        {{ notification.attributes.gender}}
-    {%endif%}
-    <hr/>
-</ul>
+<div class="card border-{{ 'success' if person else 'danger' }} align-center" style="width: 18rem;">
+    <div class="card-header">Doorbell Notification</div>
+    <img class="card-img-top" src="{{ url_for('face_get', object_id = notification.icum_face_id) }}?w=280" alt="{{ notification.id }}">
+    <div class="card-body text-{{ 'success' if person else 'danger' }}">
+        <h5 class="card-title">{{ person.name if person else 'Stranger' }} arrived</h5>
+        {% if person %}
+        <p class="card-text">We Recognized it as the following person</p>
+        <a href="{{ url_for('get_person', object_id=person.id) }}" class="btn btn-primary">Info</a>
+        {% else %}
+        <p class="card-text">We didn't recognize this person, watch out!</p>
+        {% endif %}
+        <p class="card-text"><small class="text-muted">Stood at your doorstep at DATE</small></p>
+    </div>
+    {% if not person %}
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">Age: {{ notification.attributes.age }}</li>
+        <li class="list-group-item">Gender: {{ notification.attributes.gender}}</li>
+    </ul>
+    {% endif %}
+</div>
 
 {% endblock %}

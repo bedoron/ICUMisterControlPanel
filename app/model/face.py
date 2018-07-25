@@ -1,6 +1,25 @@
 import base64
 
+from mongoengine import ReferenceField, FileField
 from pymongo.collection import Collection, ObjectId
+from mongoengine.document import Document
+
+from person import Person
+
+
+class FaceDocument(Document):
+    person = ReferenceField(Person)
+    image = FileField(required=True)
+
+    meta = {
+        'collection': 'faces',
+        'ordering': ['-_id'],
+        'auto_create_index': True,
+        'strict': False
+    }
+
+    def read(self):
+        return self.image
 
 
 class Face(object):
@@ -84,7 +103,7 @@ class Face(object):
         :type query: dict
         :rtype: list[str]
         """
-        faces = face_collection.find({},projection={'image':False})
+        faces = face_collection.find({}, projection={'image': False})
         return [Face(record['_id'], None, record.get('person', None)) for record in faces]
 
     @staticmethod
