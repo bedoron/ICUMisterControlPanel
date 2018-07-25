@@ -12,6 +12,7 @@
     Stood at your doorstep.
     <br>
     <br>
+    {% if person %}
 
     We Recognized it as the following person:
     <a href="{{ url_for('get_person', object_id=person.id) }}" class="btn btn-outline-secondary" style="min-width:100%;">
@@ -31,6 +32,7 @@
             </div>
         </div>
     </a>
+    {%endif%}
     <hr>
 </ul>
 

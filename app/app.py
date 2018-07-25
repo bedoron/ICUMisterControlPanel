@@ -61,6 +61,9 @@ def exception_handler(ex):
 
 
 @APP.route('/')
+def main_page():
+    return redirect(url_for('show_all_persons'))
+
 def show_all():
     pending_users = []
     for new_face in new_faces.find():
@@ -370,7 +373,7 @@ def show_notification(notification_id):  # Show in mobile page
     notification = Notification.objects.get(id=notification_id)
     face_id = notification.icum_face_id
     face = Face.find(face_collection, ObjectId(face_id))
-    person = Person.objects.get(id=face.person)
+    person = Person.objects.get(id=face.person) if face.person else None
     return render_template('show_notification.html', notification=notification, person=person, image=face.image)
     # return "we recognized someone at your door!\n details:{}".format(pretty)
 
@@ -438,7 +441,7 @@ def detect():
 
     most_suitable = max(candidates, key=lambda record: record['confidence']) if candidates else None
     person = Person.objects.get(person_id=most_suitable['personId']) if candidates else None
-    face.person = person.id
+    face.person = person.id if person else None
     icum_face_id = str(face.save(face_collection))
 
     if not person:

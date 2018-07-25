@@ -15,7 +15,7 @@ class Face(object):
     def __init__(self, id, encoded_image, person=None):
         super(Face, self).__init__()
         self._id = id
-        self._image = base64.b64decode(encoded_image)
+        self._image = base64.b64decode(encoded_image) if encoded_image else None
         self.person = person
 
     def read(self):
@@ -84,8 +84,8 @@ class Face(object):
         :type query: dict
         :rtype: list[str]
         """
-        faces = face_collection.find()
-        return [Face(record['_id'], record['image'], record.get('person', None)) for record in faces]
+        faces = face_collection.find({},projection={'image':False})
+        return [Face(record['_id'], None, record.get('person', None)) for record in faces]
 
     @staticmethod
     def delete(face_collection, object_id):
