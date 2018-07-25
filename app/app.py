@@ -393,15 +393,6 @@ def create_notification():  # Create a new person from notification image
     return render_template('add_notification.html', form=form)
 
 
-@APP.route('/detect', methods=['POST', 'GET'])
-def detect():
-    method = request.method
-    if method == "GET":
-        return "get is not supported!", 404
-    file = request.files.get('faceImage', None)
-    if file is None:
-        return "Please attach an image, so we have something to work with!", 404
-
 @APP.route('/notifications/')
 def show_all_notifications():
     all_notifications = Notification.objects()
@@ -439,14 +430,15 @@ def detect():
     identified_list, identified_dict = knowns.identify_face(detected_face_guid)
 
     candidates = identified_dict[detected_face_guid]
-    most_suitable = max(candidates, key=lambda record: record['confidence'])
+
+    most_suitable = max(candidates, key=lambda record: record['confidence']) if candidates else None
+    person = Person.objects.get(person_id=most_suitable['personId']) if candidates else None
 
     icum_face_id = str(face.save(face_collection))
-    person = Person.objects.get(person_id=most_suitable['personId'])
 
     if not person:
         _handle_face_notification(icum_face_id)
-        return jsonify(status='person is unknown'), 404
+        return jsonify(status="person is unknown"), 404
 
     msg = _handle_face_notification(icum_face_id, person)
     return jsonify(candidates=candidates, status='Notified person icum id {}'.format(str(person.id))), msg.status

@@ -58,6 +58,7 @@ class Face(object):
         """
         :type face_collection: Collection
         :type binary_image: bytearray
+        :type store: bool
         :rtype: Face
         """
         encoded_file = base64.b64encode(binary_image)
