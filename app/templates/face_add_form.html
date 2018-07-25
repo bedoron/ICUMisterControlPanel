@@ -6,7 +6,7 @@
 {% block content %}
 <h1>Add face form</h1>
 
-<form action="{{ url_for('face_store') }}" method="post" enctype="multipart/form-data" >
+<form action="{{ url_for('face_store') + person_id_param }}" method="post" enctype="multipart/form-data" >
     <label for="file">Face image:</label>
     <input type="file" name="file" id="file" class="form-control-file"/>
 

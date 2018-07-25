@@ -74,6 +74,16 @@ class PersonGroup(object):
 
         return True
 
+    def add_person_by_name(self, person_name):
+        person_result = CF.person.create(self._person_group_id, person_name)
+        return person_result['personId']
+
+    def add_face_to_person(self, person_id, face):
+        return CF.person.add_face(face, self._person_group_id, person_id)
+
+    def train(self):
+        CF.person_group.train(self._person_group_id)
+
     def add_person(self, person):
         """
         :type person: PersonLegacy
@@ -92,12 +102,24 @@ class PersonGroup(object):
 
         return True
 
-    def detect(self, face_image):
-        result = CF.face.detect(face_image, face_id=True, attributes="gender,age")
-        if len(result) > 0:
-            self._logger.info("Identified face at: %s", result)
+    def detected_face(self, readable_object):
+        faces_guids = [face['faceId'] for face in CF.face.detect(readable_object)]
+        return faces_guids[0] if faces_guids and isinstance(faces_guids, list) else None
 
-        return result
+    def identify_face(self, face_guids):
+        face_guids = face_guids if isinstance(face_guids, list) else [face_guids]
+        try:
+            identify = CF.face.identify(face_guids, self._person_group_id)
+            return identify, self._detected_face_to_map(identify)
+        except CognitiveFaceException as ex:
+            if ex.status_code not in [404, 400]:
+                raise ex
+
+        return [], {}
+
+    @staticmethod
+    def _detected_face_to_map(detected_face_result):
+        return {record['faceId']: record['candidates'] for record in detected_face_result}
 
     def identify(self, person):
         """

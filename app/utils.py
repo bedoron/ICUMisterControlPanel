@@ -74,7 +74,8 @@ def initialize_cf():
 
 def setup_mongoengine(app):
     app.config['MONGODB_SETTINGS'] = {
-        'host': MONGO_URI
+        'host': MONGO_URI,
+        'db': MONGO_DBNAME
     }
 
 
@@ -99,3 +100,22 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(o, datetime.datetime):
             return str(o)
         return json.JSONEncoder.default(self, o)
+
+
+class EventHubClient(object):
+    connection_template = {
+        'headers': {
+            'Authorization': 'SharedAccessSignature ' +
+                             'sr={namespace}.servicebus.windows.net&' +
+                             'sig={shared_access_key}&' +
+                             'se={ts}&' +
+                             'skn={policy_name}',
+
+            'Content-Type': 'application/atom+xml;type=entry;charset=utf-8',
+            'url': 'https://{namespace}.servicebus.windows.net/{name}/messages'
+        }
+    }
+
+    def __init__(self, kv_client):
+        super(EventHubClient, self).__init__()
+        self._kv_client = kv_client

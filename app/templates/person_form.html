@@ -4,17 +4,15 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
-<h1>Person form</h1>
+<h1>Add Known person</h1>
 
 
-<form action="{{ url_for('create_person') }}" method="post" enctype="multipart/form-data" >
+<form action="{{ url_for('create_person') }}" method="post">
     {{ form.name.label }}:
     {{ form.name(class_='form-control') }}
-    {{ form.id(class_='form-control') }}
 
     <input type="submit" value="Submit" class="btn btn-default"/>
     {{ form.csrf_token }}
 </form>
-
 
 {% endblock %}

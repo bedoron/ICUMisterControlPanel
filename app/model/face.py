@@ -12,13 +12,35 @@ class Face(object):
     }
     """
 
-    def __init__(self, id, encoded_image):
+    def __init__(self, id, encoded_image, person=None):
         super(Face, self).__init__()
         self._id = id
         self._image = base64.b64decode(encoded_image)
+        self.person = person
 
     def read(self):
         return self._image
+
+    def save(self, faces_collection):
+        """
+        :type faces_collection: Collection
+        """
+        to_db = {
+            'image': base64.b64encode(self._image)
+        }
+
+        if self.person:
+            to_db['person'] = self.person
+
+        query = dict()
+        if self._id:
+            query['_id'] = self._id
+
+        result = faces_collection.update_one(query, {'$set': to_db}, upsert=True)
+
+        self._id = result.upserted_id if not self._id else self._id
+
+        return self._id
 
     @property
     def image(self):
@@ -32,15 +54,18 @@ class Face(object):
         return self._id
 
     @staticmethod
-    def create(face_collection, binary_image):
+    def create(face_collection, binary_image, store=True):
         """
         :type face_collection: Collection
         :type binary_image: bytearray
         :rtype: Face
         """
         encoded_file = base64.b64encode(binary_image)
-        result = face_collection.insert_one({'image': encoded_file})
-        return Face(result.inserted_id, encoded_file)
+        if store:
+            result = face_collection.insert_one({'image': encoded_file})
+            return Face(result.inserted_id, encoded_file)
+        else:
+            return Face(None, encoded_file)
 
     @staticmethod
     def find(face_collection, object_id):
@@ -50,7 +75,8 @@ class Face(object):
         :rtype: Face
         """
         face_document = face_collection.find_one({'_id': object_id})
-        return Face(face_document['_id'], face_document['image']) if face_document else None
+        return Face(face_document['_id'], face_document['image'],
+                    face_document.get('person', None)) if face_document else None
 
     @staticmethod
     def find_all(face_collection, query=None):
@@ -63,7 +89,6 @@ class Face(object):
             query = {}
 
         return [record['_id'] for record in face_collection.find(query)]
-
 
     @staticmethod
     def delete(face_collection, object_id):
