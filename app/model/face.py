@@ -78,16 +78,14 @@ class Face(object):
                     face_document.get('person', None)) if face_document else None
 
     @staticmethod
-    def find_all(face_collection, query=None):
+    def find_all(face_collection):
         """
         :type face_collection: Collection
         :type query: dict
         :rtype: list[str]
         """
-        if query is None:
-            query = {}
-
-        return [Face(record['_id'], record['image'], record['person']) for record in face_collection.find(query)]
+        faces = face_collection.find()
+        return [Face(record['_id'], record['image'], record.get('person', None)) for record in faces]
 
     @staticmethod
     def delete(face_collection, object_id):

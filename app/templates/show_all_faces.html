@@ -16,7 +16,9 @@
                 </div>
                 <div class="col">
                     <div class="list-group">
-                        <a href="{{ url_for('get_person', object_id=face.person) }}" class="list-group-item list-group-item-action">Person</a>
+                        {% if face.person %}
+                            <a href="{{ url_for('get_person', object_id=face.person) }}" class="list-group-item list-group-item-action">Person</a>
+                        {% endif %}
                         <a href="{{ url_for('face_delete', object_id=face.id) }}" class="list-group-item list-group-item-action">delete</a>
                     </div>
                 </div>
