@@ -6,16 +6,19 @@
 {% block content %}
 <h1>Registered people</h1>
 <ul>
+<hr>
 {% for person in persons %}
-    <li>
-        {{ person.name }}<br/><br/>
-        {{ person.person_proup }}<br/>
-        <div>
+    <button style="min-width:100%; text-align: left">
+        <b>Name:    </b>{{ person.name }}<br/>
+        <b>Type:    </b>{{ person.person_proup }}<br/>
+        <hr>
+        <div style="flex-direction: col; margin-bottom: 4px;">
             {% for face_id in person.trained_faces %}
-            <img src="{{ url_for('face_get', object_id = face_id) }}"/>
+            <img style="min-height: 80px; max-height:80px" src="{{ url_for('face_get', object_id = face_id) }}"/>
             {% endfor %}
         </div>
-    </li>
+    </button>
+    <hr>
 {% endfor %}
 </ul>
 
