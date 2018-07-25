@@ -299,8 +299,8 @@ def face_get(object_id):
 
 @APP.route('/face/delete/<object_id>')
 def face_delete(object_id):
-    Face.delete(face_collection, ObjectId(object_id))
-    flash('Deleted face ' + str(object_id))
+    # Face.delete(face_collection, ObjectId(object_id))
+    flash('Deleted face ' + str(object_id) + " didn't really happen")
     return redirect(url_for('show_all_faces'))
 
 
