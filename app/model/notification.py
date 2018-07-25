@@ -19,7 +19,7 @@ class Notification(Document):
 
     def to_eventhub_json(self):
         res = {
-            'url': url_for('show_notification', notification_id=str(self.id)),
+            'url': 'http://icumistercontrolpanel.azurewebsites.net' + url_for('show_notification', notification_id=str(self.id)),
             'msg': self.msg,
             'type': self.msg_type if self.msg_type else 'unknown',
             'timestamp': str(datetime.datetime.now()),
