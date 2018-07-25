@@ -4,7 +4,7 @@
 {{ super() }}
 {% endblock %}
 {% block content %}
-
+<div class="justify-content-center container">
 <h1>{{ person.name }}
     <span class="badge badge-secondary">
         {% if person.person_group %}
@@ -19,7 +19,7 @@
     <div class="carousel-inner">
         {% for face_id in person.trained_faces %}
         <div class="carousel-item{{ ' active' if loop.index == 1 else '' }}">
-            <img class="d-block w-100" src="{{ url_for('face_get', object_id = face_id) }}" alt="{{ face_id }}">
+            <img class="d-block w-75 img-thumbnail" src="{{ url_for('face_get', object_id = face_id) }}" alt="{{ face_id }}">
         </div>
         {% endfor %}
     </div>
@@ -33,10 +33,10 @@
     </a>
 </div>
 
-<p class="navbar-btn">
-    <a href="{{ url_for('face_store') }}?id={{ person.id }}" class="btn btn-default">Add face</a>
-</p>
-
+<div class="d-flex justify-content-center p-3">
+    <a href="{{ url_for('face_store') }}?id={{ person.id }}" class="btn btn-outline-primary">Add face</a>
+</div>
+</div>
 <script>
 $('.carousel').carousel({
   interval: 2000
