@@ -5,10 +5,11 @@
 {% endblock %}
 {% block content %}
 <h1>Doorbell Notification</h1>
+<br>
 <ul>
 <hr>
     <img style="min-height: 200px !important; max-height:200px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = notification.icum_face_id) }}"/>
-
+    <br>
     Stood at your doorstep.
     <br>
     <br>
@@ -33,8 +34,16 @@
         </div>
     </a>
     {%else%}
+
+        We didn't recognize this person, watch out!
+        <br>
         <hr/>
-        We didn't recognize this person in your trust list, watch out!
+        <h2>Attributes:</h2>
+        Age:
+        {{ notification.attributes.age }}
+        <br>
+        Gender:
+        {{ notification.attributes.gender}}
     {%endif%}
     <hr/>
 </ul>

@@ -1,7 +1,7 @@
 import datetime
 
 from flask import url_for
-from mongoengine import URLField, StringField
+from mongoengine import URLField, StringField, DictField
 from mongoengine.document import Document
 
 
@@ -9,7 +9,7 @@ class Notification(Document):
     icum_face_id = StringField(requred=False)
     msg = StringField(max_length=500, required=True)
     msg_type = StringField(max_length=15, required=False)
-
+    attributes = DictField()
     meta = {
         'collection': 'notifications',
         'ordering': ['-_id'],
