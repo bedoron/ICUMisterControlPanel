@@ -5,7 +5,7 @@ import time
 
 from bson import ObjectId
 from cognitive_face import CognitiveFaceException
-from flask import Flask
+from flask import Flask, make_response
 from flask import render_template, jsonify, request, flash, redirect, Response, url_for
 from flask_mongo_sessions import MongoDBSessionInterface
 from flask_mongoengine.wtf import model_form
@@ -256,6 +256,10 @@ def face_store():
     id_param = '?id=' + id if id else ''
 
     fuf = FaceUploadForm()
+    response_back_to_face_create = make_response(render_template('face_add_form.html', form=fuf, person_id_param=id_param))
+    if id:
+        response_back_to_face_create.headers['X-Person-ID'] = id
+
     if fuf.is_submitted():
         face = Face.create(face_collection, fuf.file.data.read())
         flash('Added face id ' + str(face.id), category='info')
@@ -268,14 +272,17 @@ def face_store():
 
             if not person:
                 flash("Person doesn't belong to any PersonGroup", category='danger')
-                return render_template('face_add_form.html', form=fuf, person_id_param='')
+                response = make_response(render_template('face_add_form.html', form=fuf, person_id_param=''))
+                if id:
+                    response.headers['X-Person-ID'] = id
+                return response
 
             known_group = PersonGroup.known_person_group()
             try:
                 result = known_group.add_face_to_person(person.person_id, face)
             except CognitiveFaceException as ex:
                 flash(ex.msg, category='danger')
-                return render_template('face_add_form.html', form=fuf, person_id_param=id_param)
+                return response_back_to_face_create
 
             person.trained_faces = person.trained_faces + [str(face.id)]  # Lists are immutable
             person.save()
@@ -288,7 +295,7 @@ def face_store():
 
         return redirect(url_for('create_person'))
 
-    return render_template('face_add_form.html', form=fuf, person_id_param=id_param)
+    return response_back_to_face_create
 
 
 @APP.route('/face/<object_id>')
@@ -352,7 +359,11 @@ def create_person():
             person = form.save(validate=False)  # type: Person
             flash('Person {} successfully save'.format(person_name), category='info')
 
-        return redirect(url_for('face_store') + '?id=' + str(person.id))
+        icum_person_id = str(person.id)
+        response = redirect(url_for('face_store') + '?id=' + icum_person_id)
+        response.headers['X-Person-ID'] = icum_person_id
+
+        return response
 
     return render_template('person_form.html', form=form)
 
