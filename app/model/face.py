@@ -32,13 +32,11 @@ class Face(object):
         if self.person:
             to_db['person'] = self.person
 
-        query = dict()
         if self._id:
-            query['_id'] = self._id
-
-        result = faces_collection.update_one(query, {'$set': to_db}, upsert=True)
-
-        self._id = result.upserted_id if not self._id else self._id
+            faces_collection.update_one({'_id': self._id}, {'$set': to_db})
+        else:
+            result = faces_collection.insert_one(to_db)
+            self._id = result.inserted_id
 
         return self._id
 
