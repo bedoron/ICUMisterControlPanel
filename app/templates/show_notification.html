@@ -4,15 +4,16 @@
 {{ super() }}
 {% endblock %}
 {% block content %}
-<h1>Doorbell Notification</h1>
-<br>
+
 <ul>
 <hr>
+
+<h1>Doorbell Notification</h1>
     <img style="min-height: 200px !important; max-height:200px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = notification.icum_face_id) }}"/>
     <br>
     Stood at your doorstep.
-    <br>
-    <br>
+    <br/>
+    <br/>
     {% if person %}
 
     We Recognized it as the following person:
@@ -36,12 +37,12 @@
     {%else%}
 
         We didn't recognize this person, watch out!
-        <br>
+        <br/>
         <hr/>
         <h2>Attributes:</h2>
         Age:
         {{ notification.attributes.age }}
-        <br>
+        <br/>
         Gender:
         {{ notification.attributes.gender}}
     {%endif%}
