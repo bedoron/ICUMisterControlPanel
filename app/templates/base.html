@@ -34,14 +34,16 @@
     {% endfor %}
   {% endif %}
 {% endwith %}
-    <div id="content" style="max-width: 500px; padding:10px;">{% block content %}{% endblock %}</div>
+    <div id="content" class="d-flex justify-content-center">
+        {% block content %}{% endblock %}
+    </div>
 
-<p class="navbar-btn">
-    <a href="{{ url_for('create_person') }}" class="btn btn-default">Add person</a>
-    <a href="{{ url_for('show_all_persons') }}" class="btn btn-default">Show all people</a>
-    <a href="{{ url_for('show_all_notifications') }}" class="btn btn-default">Show all notification</a>
-    <a href="{{ 'no' + url_for('reset_training') }}" class="btn btn-default">Reset training</a>
-</p>
+<div class="d-flex justify-content-center p-3">
+    <a href="{{ url_for('create_person') }}" class="btn btn-outline-primary">Enroll</a>&nbsp;
+    <a href="{{ url_for('show_all_persons') }}" class="btn btn-outline-secondary">People</a>&nbsp;
+    <a href="{{ url_for('show_all_notifications') }}" class="btn btn-outline-success">Notifications</a>
+    <!-- <a href="{{ 'no' + url_for('reset_training') }}" class="btn btn-outline-danger">Reset training</a> -->
+</div>
 
 </body>
 </html>

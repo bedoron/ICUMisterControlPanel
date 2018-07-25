@@ -4,8 +4,9 @@
 {{ super() }}
 {% endblock %}
 {% block content %}
-<h1>Notification history</h1>
+
 <div class="list-group">
+    <h1 class="p-3">Notification history</h1>
 {% for notification in notifications %}
     <a href="{{ url_for('show_notification', notification_id=notification.id)}}" class="list-group-item list-group-item-action flex-column align-items-start">
     <div class="d-flex w-100 justify-content-between">

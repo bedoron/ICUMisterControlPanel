@@ -4,10 +4,31 @@
 {{ super() }}
 {% endblock %}
 {% block content %}
-<h1>Registered people</h1>
-<ul>
-<hr>
+<div class="list-group">
+    <h1 class="p-3">Registered people</h1>
 {% for person in persons %}
+    <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+        <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ person.name }}</h5>
+            <small class="text-monospace">
+                {{ person.person_proup if person.person_group else 'Unclassified' }}
+            </small>
+        </div>
+        <p class="mb-1">
+        {% for face_id in person.trained_faces %}
+            <img style="min-height: 80px !important; max-height:80px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = face_id) }}"/>
+        {% endfor %}
+        </p>
+        <small>
+            -
+        </small>
+    </a>
+{% endfor %}
+
+
+<!--
+{% for person in persons %}
+
     <a href="{{ url_for('get_person', object_id=person.id) }}" class="btn btn-outline-secondary" style="min-width:100%;">
         <div  style="min-width:100%; text-align: left">
             <b>Name:    </b>{{ person.name }}<br/>
@@ -24,8 +45,9 @@
             </div>
         </div>
     </a>
-    <hr>
+    <hr />
 {% endfor %}
-</ul>
+-->
+</div>
 
 {% endblock %}

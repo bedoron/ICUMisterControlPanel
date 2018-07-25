@@ -4,15 +4,12 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
-<h1>Add Known person</h1>
-
-
-<form action="{{ url_for('create_person') }}" method="post">
+<form action="{{ url_for('create_person') }}" method="post" class="p-3 justify-content-center">
+    <h1 class="p-3">Add Known person</h1>
     {{ form.name.label }}:
     {{ form.name(class_='form-control') }}
 
     <input type="submit" value="Submit" class="btn btn-default"/>
     {{ form.csrf_token }}
 </form>
-
 {% endblock %}

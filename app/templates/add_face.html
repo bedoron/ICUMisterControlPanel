@@ -4,19 +4,12 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
-  <h1>Add new face to pending faces</h1>
-<div>
-    <form name="addFace" enctype="multipart/form-data" action="/add_face" method="post">
-        <label for="faceImage">Face image:</label>
-        <input type="file" name="faceImage" id="faceImage" class="form-control-file"/>
 
-        <input type="submit" value="Submit" class="btn btn-default"/>
-    </form>
-</div>
+<form name="addFace" enctype="multipart/form-data" action="/add_face" method="post" class="p-3">
+    <h1 class="p-3">Add new face to pending faces</h1>
+    <label for="faceImage">Face image:</label>
+    <input type="file" name="faceImage" id="faceImage" class="form-control-file"/>
 
-
-<p class="navbar-btn">
-  <a href="/test" class="btn btn-default">Test</a>&nbsp;&nbsp;&nbsp;
-  <a href="/" class="btn btn-default">Main</a>
-</p>
+    <input type="submit" value="Submit" class="btn btn-default"/>
+</form>
 {% endblock %}
