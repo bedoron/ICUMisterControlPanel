@@ -8,16 +8,22 @@
 <ul>
 <hr>
 {% for person in persons %}
-    <button style="min-width:100%; text-align: left">
-        <b>Name:    </b>{{ person.name }}<br/>
-        <b>Type:    </b>{{ person.person_proup }}<br/>
-        <hr>
-        <div style="flex-direction: col; margin-bottom: 4px;">
-            {% for face_id in person.trained_faces %}
-            <img style="min-height: 80px; max-height:80px" src="{{ url_for('face_get', object_id = face_id) }}"/>
-            {% endfor %}
+    <a href="{{ url_for('get_person', object_id=person.id) }}" class="btn btn-outline-secondary" style="min-width:100%;">
+        <div  style="min-width:100%; text-align: left">
+            <b>Name:    </b>{{ person.name }}<br/>
+            {% if person.person_group %}
+                <input class="btn btn-primary" type="button" value="{{ person.person_proup }}">
+            {%else%}
+                <input class="btn btn-primary" type="button" value="Unclassified">
+            {%endif%}
+            <hr>
+            <div style="flex-direction: col; margin-bottom: 4px;">
+                {% for face_id in person.trained_faces %}
+                <img style="min-height: 80px !important; max-height:80px !important;padding:1px; border:1px solid #021a40;" src="{{ url_for('face_get', object_id = face_id) }}"/>
+                {% endfor %}
+            </div>
         </div>
-    </button>
+    </a>
     <hr>
 {% endfor %}
 </ul>
