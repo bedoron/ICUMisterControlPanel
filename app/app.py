@@ -425,10 +425,12 @@ def delete_person(object_id):
 @APP.route('/notifications/<notification_id>')
 def show_notification(notification_id):  # Show in mobile page
     notification = Notification.objects.get(id=notification_id)
+    time = notification.id.generation_time
+    time_str = "{}-{}-{}, {}:{}".format(time.day, time.month, time.year, str(time.hour).zfill(2), str(time.minute).zfill(2))
     face_id = notification.icum_face_id
     face = FaceDocument.objects.get(id=face_id)
     # person = Person.objects.get(id=face.person) if face.person else None
-    return render_template('show_notification.html', notification=notification, face=face, person=face.person)
+    return render_template('show_notification.html', notification=notification, face=face, person=face.person, time=time_str)
     # return "we recognized someone at your door!\n details:{}".format(pretty)
 
 

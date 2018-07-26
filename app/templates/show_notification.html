@@ -15,7 +15,7 @@
         {% else %}
         <p class="card-text">We didn't recognize this person, watch out!</p>
         {% endif %}
-        <p class="card-text"><small class="text-muted">Stood at your doorstep at DATE</small></p>
+        <p class="card-text"><small class="text-muted">Stood at your doorstep at {{ time }}</small></p>
     </div>
     {% if not person %}
     <ul class="list-group list-group-flush">
